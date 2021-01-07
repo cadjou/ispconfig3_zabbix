@@ -1,0 +1,91 @@
+<div class='page-header'>
+    <h1>
+        <tmpl_var name="list_head_txt">
+    </h1>
+</div>
+<p>
+    <tmpl_var name="list_desc_txt">
+</p>
+
+<tmpl_if name="config_error_msg">
+    <div style="background: #ffdfdf; border: 1px solid #df7d7d; border-width: 1px 0; margin: 1.5em 0 1.5em 0; padding: 7px;">
+        <p style="font-face:bold">{tmpl_var name='configuration_error_txt'}</p>
+        <div>
+            <div style="float:left;width:150px;">{tmpl_var name='config_error_tstamp'} :&nbsp;</div>
+            <div style="padding-left:150px;">{tmpl_var name='config_error_msg'}</div>
+        </div>
+    </div>
+</tmpl_if>
+
+
+{tmpl_hook name="begin_form"}
+<div class="form-group">
+    <label for="domain_id" class="col-sm-3 control-label">{tmpl_var name='domain_txt'}</label>
+    <div class="col-sm-9">
+        <select name="domain_id" id="domain_id" class="form-control">
+            {tmpl_var name='domain_id'}
+        </select>
+    </div>
+</div>
+<div class="form-group">
+    <label for="check_period" class="col-sm-3 control-label">{tmpl_var name='check_period_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="check_period" id="check_period"
+               value="{tmpl_var name='check_period'}"
+               class="form-control"/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="url_path" class="col-sm-3 control-label">{tmpl_var name='path_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="url_path" id="url_path"
+               value="{tmpl_var name='url_path'}"
+               class="form-control"/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="timeout" class="col-sm-3 control-label">{tmpl_var name='timeout_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="timeout" id="timeout"
+               value="{tmpl_var name='timeout'}"
+               class="form-control"/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="code_status" class="col-sm-3 control-label">{tmpl_var name='code_status_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="code_status" id="code_status"
+               value="{tmpl_var name='code_status'}"
+               class="form-control"/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="retries" class="col-sm-3 control-label">{tmpl_var name='retries_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="retries" id="retries"
+               value="{tmpl_var name='retries'}"
+               class="form-control"/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="string_search" class="col-sm-3 control-label">{tmpl_var name='string_search_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="string_search" id="string_search"
+               value="{tmpl_var name='string_search'}"
+               class="form-control"/>
+    </div>
+</div>
+{tmpl_hook name="field_active"}
+<div class="form-group">
+    <label class="col-sm-3 control-label">{tmpl_var name='active_txt'}</label>
+    <div class="col-sm-9">
+        {tmpl_var name='active'}
+    </div>
+</div>
+{tmpl_hook name="end_form"}
+<input type="hidden" name="id" value="{tmpl_var name='id'}">
+
+<div class="clear"><div class="right">
+    <button class="btn btn-default formbutton-success" type="button" value="{tmpl_var name='btn_save_txt'}" data-submit-form="pageForm" data-form-action="zabbix/monitor_edit.php">{tmpl_var name='btn_save_txt'}</button>
+    <button class="btn btn-default formbutton-default" type="button" value="{tmpl_var name='btn_cancel_txt'}" data-load-content="zabbix/monitor_list.php">{tmpl_var name='btn_cancel_txt'}</button>
+</div></div>

@@ -1,0 +1,118 @@
+<tmpl_if name='datalog_changes_count' op='>' value='0'>
+    <div>
+        <div class="systemmonitor-state state-info">
+            <div class="status"></div>
+            <div class="statusMsg">
+                {tmpl_var name="datalog_changes_txt"}
+                <ul>
+                    <tmpl_loop name="datalog_changes">
+                        <li><strong>{tmpl_var name="text"}:</strong> {tmpl_var name="count"}</li>
+                    </tmpl_loop>
+                </ul>
+                {tmpl_var name="datalog_changes_end_txt"}
+            </div>
+        </div>
+        <br/>
+    </div>
+</tmpl_if>
+
+<div class='page-header'>
+    <h1>
+        <tmpl_var name="list_head_txt">
+    </h1>
+</div>
+<p>
+    <tmpl_var name="list_desc_txt">
+</p>
+
+
+<legend>
+    <tmpl_var name="monTransRefreshsq">
+</legend>
+
+<div class="form-group">
+    <div class="col-sm-12"><select name="refreshinterval" id="refreshinterval" class="form-control"
+                                   onChange="ISPConfig.loadContentRefresh('zabbix/monitor_graph.php?')">
+        {tmpl_var name='refresh'}
+    </select>
+    </div>
+</div>
+<div class="form-group">
+    <label for="trend_start_date" class="col-sm-3 control-label">Start</label>
+    <div class="col-sm-9">
+        <input type="text" class="form-control" name="trend_start_date" id="trend_start_date" value="{tmpl_var name='start_date'}" data-input-element="datetime" data-date-format="dd-mm-yyyy hh:ii">
+    </div>
+</div>
+<div class="form-group">
+    <label for="trend_end_date" class="col-sm-3 control-label">End</label>
+    <div class="col-sm-9">
+        <input type="text" class="form-control" name="trend_end_date" id="trend_end_date" value="{tmpl_var name='end_date'}" data-input-element="datetime" data-date-format="dd-mm-yyyy hh:ii">
+    </div>
+</div>
+<div class="form-group">
+    {tmpl_var name='domaines'}
+</div>
+<canvas id="myChart" width="100%" height="50px"></canvas>
+
+<script>
+    $.getScript("https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js",function() {
+        $.getScript("https://cdn.jsdelivr.net/npm/chart.js@2.8.0",function() {
+            $.getScript("/zabbix/js/graph.js",function() {
+                var myChart;
+                var config = {
+                    type: 'line',
+                    data: {
+                        labels: [moment($('#trend_start_date').val(), 'DD-MM-YYYY HH:mm').toDate(), moment($('#trend_end_date').val(), 'DD-MM-YYYY HH:mm').toDate()],
+                        datasets: [{
+                            label: 'groupe-lbac.com',
+                            data: JSON.parse('{tmpl_var name="datatrend"}'),
+                            backgroundColor: ['rgba(255, 99, 132, 0.2)'],
+                            borderColor: ['rgba(255, 99, 132, 1)'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        title: {
+                            display: true,
+                            text: 'Trend'
+                        },
+                        scales: {
+                            xAxes: [{
+                                type: 'time',
+                                time: {
+                                    parser: 'DD-MM-YYYY HH:mm',
+                                    tooltipFormat: 'DD-MM-YYYY HH:mm',
+                                    displayFormats: {
+                                        hour: 'DD-MM-YYYY HH:mm'
+                                    }
+                                },
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Date'
+                                }
+                            }],
+                            yAxes: [{
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Time (s)'
+                                }
+                            }]
+                        },
+                    },
+                };
+                loadChart(config);
+                $('#trend_start_date').on('change', function () {
+                    config.data.labels = [moment($('#trend_start_date').val(), 'DD-MM-YYYY HH:mm').toDate(), moment($('#trend_end_date').val(), 'DD-MM-YYYY HH:mm').toDate()]; // remove the label first
+                    console.log(config);
+                    loadChart(config);
+                });
+                $('#trend_end_date').on('change', function () {
+                    config.data.labels = [moment($('#trend_start_date').val(), 'DD-MM-YYYY HH:mm').toDate(), moment($('#trend_end_date').val(), 'DD-MM-YYYY HH:mm').toDate()]; // remove the label first
+                    console.log(config);
+                    loadChart(config);
+                });
+            });
+        });
+    });
+</script>

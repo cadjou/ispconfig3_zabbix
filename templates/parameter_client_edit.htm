@@ -1,0 +1,98 @@
+<div class='page-header'>
+    <h1>
+        <tmpl_var name="list_head_txt">
+    </h1>
+</div>
+<p>
+    <tmpl_var name="list_desc_txt">
+</p>
+
+<tmpl_if name="config_error_msg">
+    <div style="background: #ffdfdf; border: 1px solid #df7d7d; border-width: 1px 0; margin: 1.5em 0 1.5em 0; padding: 7px;">
+        <p style="font-face:bold">{tmpl_var name='configuration_error_txt'}</p>
+        <div>
+            <div style="float:left;width:150px;">{tmpl_var name='config_error_tstamp'} :&nbsp;</div>
+            <div style="padding-left:150px;">{tmpl_var name='config_error_msg'}</div>
+        </div>
+    </div>
+</tmpl_if>
+
+
+{tmpl_hook name="begin_form"}
+<div class="form-group">
+    <label for="client_name" class="col-sm-3 control-label">{tmpl_var name='reseller_id_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="client_name" id="client_name"
+               value="{tmpl_var name='client_name'}" class="form-control" readonly/>
+    </div>
+</div>
+<input type="hidden" name="client_id" id="client_id"  value="{tmpl_var name='client_id'}"/>
+<div class="form-group">
+    <label for="limit_monitor" class="col-sm-3 control-label">{tmpl_var name='limit_monitor_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="limit_monitor" id="limit_monitor"
+               value="{tmpl_var name='limit_monitor'}" class="form-control" <tmpl_if name="not_reseler">readonly</tmpl_if>/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="limit_user" class="col-sm-3 control-label">{tmpl_var name='limit_user_txt'}</label>
+    <div class="col-sm-9">
+        {tmpl_var name='limit_user'}
+    </div>
+</div>
+<div class="form-group">
+    <label for="limit_def_check_period" class="col-sm-3 control-label">{tmpl_var name='limit_def_check_period_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="limit_def_check_period" id="limit_def_check_period"
+               value="{tmpl_var name='limit_def_check_period'}" class="form-control"/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="limit_min_check_period" class="col-sm-3 control-label">{tmpl_var name='limit_min_check_period_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="limit_min_check_period" id="limit_min_check_period"
+               value="{tmpl_var name='limit_min_check_period'}" class="form-control" <tmpl_if name="not_reseler">readonly</tmpl_if>/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="limit_def_retries" class="col-sm-3 control-label">{tmpl_var name='limit_def_retries_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="limit_def_retries" id="limit_def_retries"
+               value="{tmpl_var name='limit_def_retries'}" class="form-control"/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="limit_max_retries" class="col-sm-3 control-label">{tmpl_var name='limit_max_retries_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="limit_max_retries" id="limit_max_retries"
+               value="{tmpl_var name='limit_max_retries'}" class="form-control" <tmpl_if name="not_reseler">readonly</tmpl_if>/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="limit_def_timeout" class="col-sm-3 control-label">{tmpl_var name='limit_def_timeout_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="limit_def_timeout" id="limit_def_timeout"
+               value="{tmpl_var name='limit_def_timeout'}" class="form-control"/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="limit_max_timeout" class="col-sm-3 control-label">{tmpl_var name='limit_max_timeout_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="limit_max_timeout" id="limit_max_timeout"
+               value="{tmpl_var name='limit_max_timeout'}" class="form-control" <tmpl_if name="not_reseler">readonly</tmpl_if>/>
+    </div>
+</div>
+<div class="form-group">
+    <label for="limit_def_status_codes" class="col-sm-3 control-label">{tmpl_var name='limit_def_status_codes_txt'}</label>
+    <div class="col-sm-9">
+        <input type="text" name="limit_def_status_codes" id="limit_def_status_codes"
+               value="{tmpl_var name='limit_def_status_codes'}" class="form-control"/>
+    </div>
+</div>
+{tmpl_hook name="end_form"}
+<input type="hidden" name="id" value="{tmpl_var name='id'}">
+
+<div class="clear"><div class="right">
+    <button class="btn btn-default formbutton-success" type="button" value="{tmpl_var name='btn_save_txt'}" data-submit-form="pageForm" data-form-action="zabbix/parameter_client_edit.php">{tmpl_var name='btn_save_txt'}</button>
+    <button class="btn btn-default formbutton-default" type="button" value="{tmpl_var name='btn_cancel_txt'}" data-load-content="zabbix/parameter_client_list.php">{tmpl_var name='btn_cancel_txt'}</button>
+</div></div>

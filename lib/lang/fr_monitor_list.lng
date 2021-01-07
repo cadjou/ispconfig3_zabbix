@@ -1,0 +1,12 @@
+<?php
+$wb['list_head_txt'] = 'Monitoring Zabbix';
+$wb['domain_id_txt'] = 'ID';
+$wb['active_txt'] = 'Active';
+$wb['server_id_txt'] = 'Server';
+$wb['domain_txt'] = 'Domain';
+$wb['add_new_monitor_txt'] = 'Ajouter un moniteur';
+$wb['parent_domain_id_txt'] = 'Website';
+$wb['domain_list_head_txt'] = 'Websites';
+$wb['aliasdomain_list_head_txt'] = 'Aliasdomains (Vhost)';
+$wb['subdomain_list_head_txt'] = 'Subdomains (Vhost)';
+?>
