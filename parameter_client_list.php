@@ -1,16 +1,7 @@
 <?php
-require_once '../../lib/config.inc.php';
-require_once '../../lib/app.inc.php';
+$app = require_once __DIR__ . '/lib/init_module.php';
 
-/******************************************
-* Begin Form configuration
-******************************************/
-
-$list_def_file = "list/parameters_client.list.php";
-
-/******************************************
-* End Form configuration
-******************************************/
+$list_def_file = "list/parameter_client.list.php";
 
 //* Check permissions for module
 $app->auth->check_module_permissions('client');

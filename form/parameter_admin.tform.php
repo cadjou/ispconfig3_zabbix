@@ -47,13 +47,7 @@ $form["db_table_idx"]	= "admin_id";
 $form["db_history"]		= "yes";
 $form["tab_default"]	= "parameters"; // Onglet par defaut
 $form["list_default"]	= "monitor_list.php";
-$form["auth"]  = 'yes'; // yes / no
-
-$form["auth_preset"]["userid"]  = 0; // 0 = id of the user, > 0 id must match with id of current user
-$form["auth_preset"]["groupid"] = 0; // 0 = default groupid of the user, > 0 id must match with groupid of current user
-$form["auth_preset"]["perm_user"] = 'riud'; //r = read, i = insert, u = update, d = delete
-$form["auth_preset"]["perm_group"] = 'riud'; //r = read, i = insert, u = update, d = delete
-$form["auth_preset"]["perm_other"] = ''; //r = read, i = insert, u = update, d = delete
+$form["auth"]  = 'no'; // yes / no
 
 $form["tabs"]['parameters'] = [
 	'title'  => 'Zabbix Administration Parameters',

@@ -22,6 +22,10 @@ class parameter_actions extends tform_actions
 
     protected $is_reseller_for_client;
 
+    protected $db_table;
+
+    protected $db_table_idx;
+
     protected $table_time_suffixes = [
                                         's' => 1,
                                         'm' => 60,
@@ -51,9 +55,18 @@ class parameter_actions extends tform_actions
         if ($this->debug) echo '1<br>';
         if (!$this->is_admin and !$this->is_reseller_for_client and $_SESSION['s']['user']['client_id'] <> $this->id) $this->app->error($this->app->lng('error_no_view_permission'));
 
-        $condition_sql = $this->user_type == 'client' ? 'client.limit_client = 0' : 'client.parent_client_id = 0 AND (client.limit_client > 0 OR client.limit_client = -1)';
+        $this->db_table = $this->tform->formDef['db_table'];
+        $this->db_table_idx = $this->tform->formDef['db_table_idx'];
 
-        $this->client = $this->db->queryOneRecord('SELECT 
+        $sql = 'SELECT * FROM ?? WHERE ?? = ?';
+
+        if ($this->user_type == 'admin') {
+            $_SESSION['zabbix']['parameters']['id'] = 1;
+            $this->id = ($this->db->queryOneRecord($sql, $this->db_table, $this->db_table_idx, $this->id)) ? 1 : 0;
+        }else{
+            $condition_sql = $this->user_type == 'client' ? 'client.limit_client = 0' : 'client.parent_client_id = 0 AND (client.limit_client > 0 OR client.limit_client = -1)';
+
+            $this->client = $this->db->queryOneRecord('SELECT 
             CONCAT(
                 IF(client.company_name != "", CONCAT(client.company_name, " :: "), ""),
                 IF(client.contact_firstname != "", CONCAT(client.contact_firstname, " "), ""),
@@ -63,57 +76,53 @@ class parameter_actions extends tform_actions
         FROM client 
         WHERE client_id = ? AND ' . $condition_sql,$this->id);
 
-        if ($this->debug) echo '2<br>';
-        if(!$this->client or empty($this->client['name'])) $this->app->error($this->app->lng('error_no_view_permission'));
+            if ($this->debug) echo '2<br>';
+            if(!$this->client or empty($this->client['name'])) $this->app->error($this->app->lng('error_no_view_permission'));
 
-        $this->tpl->setVar('client_name',$this->client['name']);
+            $this->tpl->setVar('client_name',$this->client['name']);
 
-        $_SESSION['zabbix']['parameters']['client_id'] = $this->client['client_id'];
+            $_SESSION['zabbix']['parameters']['id'] = $this->client[$this->db_table_idx];
 
-        $sql = 'SELECT * FROM ?? WHERE ?? = ?';
 
-        $this->id = ($this->db->queryOneRecord($sql, $this->tform->formDef['db_table'], $this->tform->formDef['db_table_idx'], $this->id)) ? $this->id : 0;
 
-        $this->tpl->setVar('not_admin',!$this->is_admin);
-        $this->tpl->setVar('not_reseler',!($this->is_reseller_for_client or $this->is_admin));
+            $this->id = ($this->db->queryOneRecord($sql, $this->db_table, $this->db_table_idx, $this->id)) ? $this->id : 0;
 
-        //echo '*****<br>';
-        //print_r($this->id);
-        //echo '<br>*****<br>';
-
+            $this->tpl->setVar('not_admin',!$this->is_admin);
+            $this->tpl->setVar('not_reseler',!($this->is_reseller_for_client or $this->is_admin));
+        }
         parent::onShow();
     }
 
     function onShowNew() {
         $record = [];
         $record = $this->tform->getHTML($record, $this->tform->formDef['tab_default'], 'NEW');
-        if($this->client['client_id']){
-            $record['client_id'] = $this->client['client_id'];
+        if($this->client[$this->db_table_idx] or $this->user_type == 'admin'){
+            $record[$this->db_table_idx] = $this->user_type == 'admin' ? 1 : $this->client[$this->db_table_idx];
+
             $this->tpl->setVar($record);
             $this->dataRecord['limit_monitor'] = 'SELECT count(domain_id) as nbr domain FROM web_domain WHERE web_domain.type = \'vhost\' AND `active`="y" AND {AUTHSQL::web_domain} ';
         } else{
             if ($this->debug) echo '3<br>';
             $this->app->error($this->app->lng('error_no_view_permission'));
-
         }
     }
 
     function onSubmit() {
-        if (!isset($_SESSION['zabbix']['parameters']['client_id']) or $_SESSION['zabbix']['parameters']['client_id'] <> $this->dataRecord['client_id']){
-            if (isset($_SESSION['zabbix']['parameters']['client_id'])) unset($_SESSION['zabbix']['parameters']['client_id']);
+        if (!isset($_SESSION['zabbix']['parameters']['id']) or $_SESSION['zabbix']['parameters']['id'] <> $this->dataRecord[$this->db_table_idx]){
+            if (isset($_SESSION['zabbix']['parameters']['id'])) unset($_SESSION['zabbix']['parameters']['id']);
             if ($this->debug) echo '4<br>';
             $this->app->error($this->app->lng('error_no_view_permission'));
         }
-        $this->validation_admin_limit();
+        if ($this->user_type <> 'admin')  $this->validation_admin_limit();
 
         parent::onSubmit();
     }
 
     function onBeforeInsert() {
-        if ($_SESSION['zabbix']['parameters']['client_id'] == $this->dataRecord['client_id']){
-            $this->id = $this->dataRecord['client_id'];
+        if ($_SESSION['zabbix']['parameters']['id'] == $this->dataRecord[$this->db_table_idx]){
+            $this->id = $this->dataRecord[$this->db_table_idx];
         } else{
-            unset($_SESSION['zabbix']['parameters']['client_id']);
+            unset($_SESSION['zabbix']['parameters']['id']);
             if ($this->debug) echo '5<br>';
             $this->app->error($this->app->lng('error_no_view_permission'));
         }
@@ -121,21 +130,21 @@ class parameter_actions extends tform_actions
     }
 
     function onAfterInsert() {
-        if ($_SESSION['zabbix']['parameters']['client_id'] == $this->dataRecord['client_id']){
-            $this->id = $this->dataRecord['client_id'];
+        if ($_SESSION['zabbix']['parameters']['id'] == $this->dataRecord[$this->db_table_idx]){
+            $this->id = $this->dataRecord[$this->db_table_idx];
         } else{
-            unset($_SESSION['zabbix']['parameters']['client_id']);
+            unset($_SESSION['zabbix']['parameters']['id']);
             if ($this->debug) echo '5<br>';
             $this->app->error($this->app->lng('error_no_view_permission'));
         }
     }
 
     function onAfterUpdate() {
-        $this->zabbix_addon_acces('add');
+        if ($this->user_type <> 'admin') $this->zabbix_addon_acces('add');
     }
 
     function onAfterDelete() {
-        $this->zabbix_addon_acces('remove');
+        if ($this->user_type <> 'admin') $this->zabbix_addon_acces('remove');
     }
 
     protected function parse_time_suffixes($time,$default = null){
@@ -197,7 +206,7 @@ class parameter_actions extends tform_actions
     }
 
     protected function zabbix_addon_acces($action){
-        $users_data = $this->db->queryAllRecords('SELECT userid,modules FROM sys_user WHERE client_id = ?',$this->dataRecord['client_id']);
+        $users_data = $this->db->queryAllRecords('SELECT userid,modules FROM sys_user WHERE client_id = ?',$this->dataRecord[$this->db_table_idx]);
         $updates = [];
         foreach($users_data as $data){
             $modules = $data['modules'];

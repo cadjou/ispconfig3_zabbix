@@ -1,26 +1,15 @@
 <?php
+$app = require_once __DIR__ . '/lib/init_module.php';
 
-/******************************************
- * Begin Form configuration
- ******************************************/
+$tform_def_file = "form/parameter_admin.tform.php";
 
-$tform_def_file = "form/parameters_admin.tform.php";
-
-/******************************************
- * End Form configuration
- ******************************************/
-
-require_once '../../lib/config.inc.php';
-require_once '../../lib/app.inc.php';
-
-
-//* Check permissions for module
-if($_SESSION["s"]["user"]["typ"] != 'admin') die('Access only for administrators.');
-$app->auth->check_module_permissions('zabbix');
+//* Check permissions for Admin
+if(!$app->auth->is_admin()) die('Access only for administrators.');
 
 // Loading classes
 $app->uses('tpl,tform,tform_actions,tools_sites');
-$app->load('tform_actions');
 
-$page = new tform_actions;
+require_once __DIR__ . '/lib/classes/parameter_actions.php';
+
+$page = new parameter_actions('admin');
 $page->onLoad();

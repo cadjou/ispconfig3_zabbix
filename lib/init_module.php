@@ -1,9 +1,18 @@
 <?php
+$path_lib = implode( DIRECTORY_SEPARATOR ,array_slice(explode(DIRECTORY_SEPARATOR ,__DIR__),0,-3));
+require_once $path_lib . '/lib/config.inc.php';
+require_once $path_lib . '/lib/app.inc.php';
+if (isset($app)) {
+    //* Check permissions for module
+    $app->auth->check_module_permissions('zabbix');
 
-require_once '../../../lib/config.inc.php';
-require_once '../../../lib/app.inc.php';
+    // For module installation
+    if(is_file($path_lib . '/web/zabbix/install.php')) include $path_lib . '/web/zabbix/install.php';
 
-$app->auth->check_module_permissions('zabbix');
+    return $app;
+} else{
+  die('Erreur load App file');
+}
 
 /*
 EVENT.ACK.STATUS = {EVENT.ACK.STATUS}

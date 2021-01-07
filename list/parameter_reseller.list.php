@@ -13,7 +13,7 @@
 
 
 // Name of the list
-$liste["name"]    = "resellers";
+$liste["name"]    = "parameter_reseller";
 
 // Database table
 $liste["table"]   = "client";
