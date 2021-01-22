@@ -34,6 +34,94 @@
 - Lien vers le site web
 
 ```
+Parameters list
+Admin
+    Server
+        zabbix_host
+        zabbix_user
+        zabbix_pwd
+
+    Constant
+        glue
+        isp_keyword
+        httptest_keyword
+        step_keyword
+        application_keyword
+        trigger_keyword
+
+    Limits Admin
+        mutu
+        nbr_monitor
+
+    Limits Reseller
+        reseller_connexion
+        reseller_trend
+        reseller_event
+        reseller_smtp
+        reseller_alert
+
+    Limits Client
+        client_connexion
+        client_trend
+        client_event
+        client_smtp
+        client_alert
+
+    Limits Monitor
+        periode_check
+        retries
+        timeout
+
+    Default Monitor
+        periode_check
+        retries
+        timeout
+        code_status
+
+    Default SMTP
+        smtp_host
+        smtp_port
+        smtp_ssl
+        smtp_user
+        smtp_pwd
+        smtp_sender
+
+User
+    connexion
+        user
+        pwd
+
+    email
+        receiver
+
+    Message
+        alert_subject
+        alert_content
+        recovery_subject
+        recovery_content
+
+    Constant
+        httptest_keyword
+        step_keyword
+        trigger_keyword
+        application_keyword
+
+    Default
+        periode_check
+        retries
+        timeout
+        code_status
+
+    Email
+        smtp_host
+        smtp_port
+        smtp_ssl
+        smtp_user
+        smtp_pwd
+        smtp_sender
+    
+```
+```
 Array
 (
     [s_old] => Array
@@ -46,8 +134,8 @@ Array
                     [sys_perm_user] => riud
                     [sys_perm_group] => riud
                     [sys_perm_other] => 
-                    [username] => lbac
-                    [passwort] => $1$ca0vfuA6$HhZUws7Y2JmZSKJhXX1gS.
+                    [username] => ****
+                    [passwort] => ********************
                     [modules] => zabbix,tools,help,mail,dns,dashboard,sites
                     [startmodule] => dashboard
                     [app_theme] => default
@@ -408,8 +496,8 @@ Array
                     [sys_perm_user] => riud
                     [sys_perm_group] => riud
                     [sys_perm_other] => 
-                    [username] => admin
-                    [passwort] => $1$E/N1w/u4$Q9RY2toWxzNMP1YTadQn70
+                    [username] => ************
+                    [passwort] => ******************
                     [modules] => zabbix,registrar,tools,help,mail,vm,admin,dns,monitor,dashboard,sites,client
                     [startmodule] => dashboard
                     [app_theme] => default
@@ -839,7 +927,7 @@ Array
     [monitor] => Array
         (
             [server_id] => 4
-            [server_name] => dbfr-01.cadjou.net
+            [server_name] => ******
         )
 
     [_csrf] => Array

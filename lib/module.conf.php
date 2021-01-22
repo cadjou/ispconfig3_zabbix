@@ -59,8 +59,8 @@ if($_SESSION["s"]["user"]["typ"] == 'admin') {
 	$items[] = [
 		'title' => 'Admin Parameters',
 		'target' => 'content',
-		'link' => 'zabbix/parameter_admin_edit.php?id=1',
-		'html_id' => 'parameters_admin'
+		'link' => 'zabbix/parameter_server_edit.php?id=1',
+		'html_id' => 'parameters_server'
 	];
 	$items[] = [
 		'title'   => 'Reseler Parameters',

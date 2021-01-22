@@ -6,6 +6,8 @@ Work with a single or multi servers ISPConfig >= 3.1 and Zabbix 5.2.
 - [ISPConfig](https://www.ispconfig.org/)
 - [Zabbix](https://www.zabbix.com/)
 
+**Version Alpha - Don't use now, I advise you to wait for version 0.0 in a few days**
+
 ## How to install
 
 Connect to the master ISPConfig server and go into the plugin directory.\
@@ -27,7 +29,7 @@ Allow the administrator to access to Zabbix plugin:\
 Now you can see **The Zabbix Plugin in the topbar menu**
 
 ### MySQL Permission
-By default, the ISPConfig MySQL User cannot Add/Alter/Drop Table, so you get this message when you click on the Zabbix menu\
+By default, the ISPConfig MySQL User cannot Create/Alter/Drop Table, so you get this message when you click on the Zabbix menu\
 ```CREATE command denied to user 'ispconfig'@'localhost' for table 'zabbix_monitor'```
 
 Change the user for the MySQL install by the root user:\
