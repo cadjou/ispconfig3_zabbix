@@ -59,8 +59,8 @@ if($_SESSION["s"]["user"]["typ"] == 'admin') {
 	$items[] = [
 		'title' => 'Admin Parameters',
 		'target' => 'content',
-		'link' => 'zabbix/parameter_server_edit.php?id=1',
-		'html_id' => 'parameters_server'
+		'link' => 'zabbix/parameter_admin_edit.php?id=1',
+		'html_id' => 'parameters_admin'
 	];
 	$items[] = [
 		'title'   => 'Reseler Parameters',
@@ -79,7 +79,7 @@ if($_SESSION["s"]["user"]["typ"] == 'admin') {
 	$items[] = [
 		'title'   => 'Reseler Parameters',
 		'target'  => 'content',
-		'link'    => 'zabbix/parameter_reseller_edit.php?id=' . $_SESSION['s']['user']['client_id'],
+		'link'    => 'zabbix/parameter_user_edit.php?type=reseller&id=' . $_SESSION['s']['user']['client_id'],
 		'html_id' => 'reseller_list'
 	];
 	$items[] = [
@@ -92,7 +92,7 @@ if($_SESSION["s"]["user"]["typ"] == 'admin') {
 	$items[] = [
 		'title'   => 'Client Parameters',
 		'target'  => 'content',
-		'link'    => 'zabbix/parameter_client_edit.php?id=' . $_SESSION['s']['user']['client_id'],
+		'link'    => 'zabbix/parameter_user_edit.php?type=client&id=' . $_SESSION['s']['user']['client_id'],
 		'html_id' => 'client_list'
 	];
 }

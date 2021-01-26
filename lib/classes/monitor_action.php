@@ -56,7 +56,9 @@ class monitor_action extends tform_actions
         global $app;
         //$client_group_id = $_SESSION["s"]["user"]["default_group"];
         $domain_data = $app->db->queryOneRecord('SELECT web_domain.*, client.*, server.server_name FROM web_domain, server, sys_group, client WHERE server.server_id = web_domain.server_id AND web_domain.domain_id = ? AND sys_group.groupid = web_domain.sys_groupid AND sys_group.client_id = client.client_id', $this->dataRecord['domain_id']);
-
+        $parameter_admin = '';
+        $parameter_reseller = '';
+        $parameter_reseller = '';
 
         //echo nl2br(print_r($domain_data, true)) . '<br>';
         if (isset($domain_data['sys_userid']) and $this->id)
@@ -79,5 +81,17 @@ class monitor_action extends tform_actions
                 $app->error($app->tform->wordbook["limit_webdav_user_txt"]);
             }
         }
+    }
+
+    protected function getAdminParams(){
+
+    }
+
+    protected function getResellerParams(){
+
+    }
+
+    protected function getClientParams(){
+
     }
 }

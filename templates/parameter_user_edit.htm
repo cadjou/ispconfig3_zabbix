@@ -36,41 +36,6 @@
                      aria-labelledby="headingServer">
                     <div class="panel-body">
                         <div class="form-group">
-                            <label for="zabbix_mutu" class="col-sm-3 control-label">{tmpl_var
-                                name='zabbix_mutu_txt'}</label>
-                            <div class="col-sm-9">
-                                {tmpl_var name='zabbix_mutu'}
-                                <a id="linkMutu" class="btn btn-default formbutton-default" type="button"
-                                   target="_blank" href="https://zp.kwa.digital/register">
-                                    Create an account on shared Zabbix Server
-                                </a>
-                                <script>
-                                    $(document).ready(function () {
-                                        if ($('#zabbix_mutu').prop("checked") == true) {
-                                            $('#linkMutu').show("fast");
-                                        } else {
-                                            $('#linkMutu').hide("fast");
-                                        }
-                                        $('#zabbix_mutu').click(function () {
-                                            if ($('#zabbix_mutu').prop("checked") == true) {
-                                                $('#linkMutu').show("fast");
-                                            } else {
-                                                $('#linkMutu').hide("fast");
-                                            }
-                                        });
-                                    });
-                                </script>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="zabbix_host" class="col-sm-3 control-label">{tmpl_var
-                                name='zabbix_host_txt'}</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="zabbix_host" id="zabbix_host"
-                                       value="{tmpl_var name='zabbix_host'}" class="form-control"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
                             <label for="zabbix_user" class="col-sm-3 control-label">{tmpl_var
                                 name='zabbix_user_txt'}</label>
                             <div class="col-sm-9">
@@ -89,6 +54,66 @@
                     </div>
                 </div>
             </div>
+            <!-- ### Email ### -->
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingEmail">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseEmail"
+                           aria-expanded="false" aria-controls="collapseEmail">
+                            Email
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseEmail" class="panel-collapse collapse" role="tabpanel"
+                     aria-labelledby="headingEmail">
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label for="receiver" class="col-sm-3 control-label">{tmpl_var
+                                name='receiver_txt'}</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="receiver" id="receiver"
+                                       value="{tmpl_var name='receiver'}" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="alert_subject" class="col-sm-3 control-label">{tmpl_var
+                                name='alert_subject_txt'}</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="alert_subject" id="alert_subject"
+                                       value="{tmpl_var name='alert_subject'}" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="alert_content" class="col-sm-3 control-label">{tmpl_var
+                                name='alert_content_txt'}</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" name="alert_content" id="alert_content" rows='10'
+                                          cols='30'>
+                                    {tmpl_var name='alert_content'}
+                                </textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="recovery_subject" class="col-sm-3 control-label">{tmpl_var
+                                name='recovery_subject_txt'}</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="recovery_subject" id="recovery_subject"
+                                       value="{tmpl_var name='recovery_subject'}" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="recovery_content" class="col-sm-3 control-label">{tmpl_var
+                                name='recovery_content_txt'}</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" name="recovery_content" id="recovery_content" rows='10'
+                                          cols='30'>
+                                    {tmpl_var name='recovery_content'}
+                                </textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- ### Constants ### -->
             <div class="panel panel-default">
                 <div class="panel-heading" role="tab" id="headingConstants">
@@ -102,22 +127,6 @@
                 <div id="collapseConstants" class="panel-collapse collapse" role="tabpanel"
                      aria-labelledby="headingConstants">
                     <div class="panel-body">
-                        <div class="form-group">
-                            <label for="isp_glue" class="col-sm-3 control-label">{tmpl_var name='isp_glue_txt'}</label>
-                            <div class="col-sm-9">
-                                <select name="isp_glue" id="isp_glue" class="form-control">
-                                    {tmpl_var name='isp_glue'}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="isp_keyword" class="col-sm-3 control-label">{tmpl_var
-                                name='isp_keyword_txt'}</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="isp_keyword" id="isp_keyword"
-                                       value="{tmpl_var name='isp_keyword'}" class="form-control"/>
-                            </div>
-                        </div>
                         <div class="form-group">
                             <label for="httptest_keyword" class="col-sm-3 control-label">{tmpl_var
                                 name='httptest_keyword_txt'}</label>
@@ -153,13 +162,13 @@
                     </div>
                 </div>
             </div>
-            <!-- ### Limits Reseller ### -->
+            <!-- ### Limits Client ### -->
             <div class="panel panel-default">
                 <div class="panel-heading" role="tab" id="headingLimitReseller">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseLimitReseller"
                            aria-expanded="false" aria-controls="collapseLimitReseller">
-                            Reseller limits
+                            Client limits
                         </a>
                     </h4>
                 </div>
@@ -167,98 +176,38 @@
                      aria-labelledby="headingLimitReseller">
                     <div class="panel-body">
                         <div class="form-group">
-                            <label for="limit_monitor" class="col-sm-3 control-label">{tmpl_var
-                                name='limit_monitor_txt'}</label>
+                            <label for="connexion" class="col-sm-3 control-label">{tmpl_var
+                                name='connexion_txt'}</label>
                             <div class="col-sm-9">
-                                <input type="text" name="limit_monitor" id="limit_monitor"
-                                       value="{tmpl_var name='limit_monitor'}" class="form-control"/>
-                            </div>
-                        </div>
-                        <!-- ### Limits Reseller ### -->
-                        <div class="form-group">
-                            <label for="reseller_connexion" class="col-sm-3 control-label">{tmpl_var
-                                name='reseller_connexion_txt'}</label>
-                            <div class="col-sm-9">
-                                {tmpl_var name='reseller_connexion'}
+                                {tmpl_var name='connexion'}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="reseller_trend" class="col-sm-3 control-label">{tmpl_var
-                                name='reseller_trend_txt'}</label>
+                            <label for="trend" class="col-sm-3 control-label">{tmpl_var
+                                name='trend_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='reseller_trend'}
+                                {tmpl_var name='trend'}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="reseller_event" class="col-sm-3 control-label">{tmpl_var
-                                name='reseller_event_txt'}</label>
+                            <label for="event" class="col-sm-3 control-label">{tmpl_var
+                                name='event_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='reseller_event'}
+                                {tmpl_var name='event'}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="reseller_smtp" class="col-sm-3 control-label">{tmpl_var
-                                name='reseller_smtp_txt'}</label>
+                            <label for="alert" class="col-sm-3 control-label">{tmpl_var
+                                name='alert_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='reseller_smtp'}
+                                {tmpl_var name='alert'}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="reseller_alert" class="col-sm-3 control-label">{tmpl_var
-                                name='reseller_alert_txt'}</label>
+                            <label for="smtp" class="col-sm-3 control-label">{tmpl_var
+                                name='smtp_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='reseller_alert'}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- ### Limits Client ### -->
-            <div class="panel panel-default">
-                <div class="panel-heading" role="tab" id="headingLimitClient">
-                    <h4 class="panel-title">
-                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseLimitClient"
-                           aria-expanded="false" aria-controls="collapseLimitClient">
-                            Client limits
-                        </a>
-                    </h4>
-                </div>
-                <div id="collapseLimitClient" class="panel-collapse collapse" role="tabpanel"
-                     aria-labelledby="headingLimitClient">
-                    <div class="panel-body">
-                        <div class="form-group">
-                            <label for="client_connexion" class="col-sm-3 control-label">{tmpl_var
-                                name='client_connexion_txt'}</label>
-                            <div class="col-sm-9">
-                                {tmpl_var name='client_connexion'}
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="client_trend" class="col-sm-3 control-label">{tmpl_var
-                                name='client_trend_txt'}</label>
-                            <div class="col-sm-9">
-                                {tmpl_var name='client_trend'}
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="client_event" class="col-sm-3 control-label">{tmpl_var
-                                name='client_event_txt'}</label>
-                            <div class="col-sm-9">
-                                {tmpl_var name='client_event'}
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="client_smtp" class="col-sm-3 control-label">{tmpl_var
-                                name='client_smtp_txt'}</label>
-                            <div class="col-sm-9">
-                                {tmpl_var name='client_smtp'}
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="client_alert" class="col-sm-3 control-label">{tmpl_var
-                                name='client_alert_txt'}</label>
-                            <div class="col-sm-9">
-                                {tmpl_var name='client_alert'}
+                                {tmpl_var name='smtp'}
                             </div>
                         </div>
                     </div>
@@ -277,6 +226,14 @@
                 <div id="collapseLimitMonitor" class="panel-collapse collapse" role="tabpanel"
                      aria-labelledby="headingLimitMonitor">
                     <div class="panel-body">
+                        <div class="form-group">
+                            <label for="limit_monitor" class="col-sm-3 control-label">{tmpl_var
+                                name='limit_monitor_txt'}</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="limit_monitor" id="limit_monitor"
+                                       value="{tmpl_var name='limit_monitor'}" class="form-control"/>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label for="limit_check_period" class="col-sm-3 control-label">{tmpl_var
                                 name='limit_check_period_txt'}</label>
@@ -413,7 +370,7 @@
                     </div>
                 </div>
             </div>
-            <input type="hidden" name="server_id" value="{tmpl_var name='server_id'}">
+            <input type="hidden" name="client_id" value="{tmpl_var name='client_id'}">
             <input type="hidden" name="id" value="{tmpl_var name='id'}">
 
 
@@ -423,12 +380,12 @@
             <div class="right">
                 <button class="btn btn-default formbutton-success" type="button"
                         value="{tmpl_var name='btn_save_txt'}"
-                        data-submit-form="pageForm" data-form-action="zabbix/parameter_server_edit.php">{tmpl_var
+                        data-submit-form="pageForm" data-form-action="zabbix/parameter_user_edit.php">{tmpl_var
                     name='btn_save_txt'}
                 </button>
                 <button class="btn btn-default formbutton-default" type="button"
                         value="{tmpl_var name='btn_cancel_txt'}"
-                        data-load-content="zabbix/parameter_server_edit.php">{tmpl_var name='btn_cancel_txt'}
+                        data-load-content="zabbix/parameter_user_edit.php">{tmpl_var name='btn_cancel_txt'}
                 </button>
             </div>
         </div>

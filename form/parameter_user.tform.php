@@ -37,39 +37,31 @@
 
 
 */
+if (empty($_SESSION['zabbix']['parameters']['type'])) die('No type');
 
-$form["title"]			= 'Zabbix serveur parameters';
-$form["description"]	= "";
-$form["name"]			= "zabbix_server";
-$form["action"]			= "parameter_server_edit.php";
-$form["db_table"]		= "zabbix_server";
-$form["db_table_idx"]	= "server_id";
-$form["db_history"]		= "yes";
-$form["tab_default"]	= "parameters"; // Onglet par defaut
-$form["list_default"]	= "monitor_list.php";
-$form["auth"]  = 'no'; // yes / no
+$form['title']			= $_SESSION['zabbix']['parameters']['type'] == 'reseller' ? 'Zabbix Reseller' : 'Zabbix Client';
+$form['description']	= '';
+$form['name']			= 'zabbix_parameter_user';
+$form['action']			= 'parameter_user_edit.php';
+$form['db_table']		= 'zabbix_client';
+$form['db_table_idx']	= 'client_id';
+$form['db_history']		= 'yes';
+$form['tab_default']	= 'parameters'; // Onglet par defaut
+$form['list_default']	= $_SESSION['zabbix']['parameters']['type'] == 'reseller' ? 'parameter_reseller_list.php' : 'parameter_client_list';
+$form['auth']  = 'no'; // yes / no
 
 $form["tabs"]['parameters'] = [
-	'title'  => 'Zabbix Server Parameters',
+	'title'  => $_SESSION['zabbix']['parameters']['type'] == 'reseller' ? 'Zabbix Reseler Parameters' : 'Zabbix Client Parameters',
 	'width'  => 100,
-	'template'  => "templates/parameter_server_edit.htm",
+	'template'  => "templates/parameter_user_edit.htm",
 	'readonly' => false,
 	'fields'  => [
 		//#################################
-		// Server Zabbix
+		// Zabbix Connexion
 		//#################################
-        'zabbix_mutu' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'CHECKBOX',
-            'default' => 'y',
-            'value'  => [
-                0 => 'n',
-                1 => 'y',
-            ],
-        ],
-        'zabbix_host' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'TEXT',
+        'client_id' => [
+            'datatype' => 'INTEGER',
+            'formtype' => 'HIDDEN',
             'default' => '',
             'value'  => ''
         ],
@@ -86,23 +78,59 @@ $form["tabs"]['parameters'] = [
             'value'  => ''
         ],
         //#################################
-        // Constants
+        // Email
         //#################################
-        'isp_glue' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'SELECT',
-            'default' => '-',
-            'value'  => [
-                0 => '-',
-                1 => '_',
-            ],
-        ],
-        'isp_keyword' => [
+        'receiver' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'TEXT',
-            'default' => 'isp',
+            'default' => '',
             'value'  => ''
         ],
+        'alert_subject' => [
+            'datatype' => 'VARCHAR',
+            'formtype' => 'TEXT',
+            'default' => '',
+            'value'  => ''
+        ],
+        'alert_content' => [
+            'datatype' => 'TEXT',
+            'formtype' => 'TEXTAREA',
+            'filters'   => [
+                0 => ['event' => 'SAVE',
+                    'type' => 'STRIPTAGS']
+            ],
+            'default' => '',
+            'value'  => '',
+            'separator' => '',
+            'width'  => '',
+            'maxlength' => '',
+            'rows'  => '10',
+            'cols'  => '30'
+        ],
+        'recovery_subject' => [
+            'datatype' => 'VARCHAR',
+            'formtype' => 'TEXT',
+            'default' => '',
+            'value'  => ''
+        ],
+        'recovery_content' => [
+            'datatype' => 'TEXT',
+            'formtype' => 'TEXTAREA',
+            'filters'   => [
+                0 => ['event' => 'SAVE',
+                    'type' => 'STRIPTAGS']
+            ],
+            'default' => '',
+            'value'  => '',
+            'separator' => '',
+            'width'  => '',
+            'maxlength' => '',
+            'rows'  => '10',
+            'cols'  => '30'
+        ],
+        //#################################
+        // Constants
+        //#################################
         'httptest_keyword' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'TEXT',
@@ -128,66 +156,9 @@ $form["tabs"]['parameters'] = [
             'value'  => ''
         ],
         //#################################
-        // Limits Admin
-        //#################################
-        'limit_monitor' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'TEXT',
-            'default' => '-1',
-            'value'  => ''
-        ],
-        //#################################
-        // Limits Reseller
-        //#################################
-        'reseller_connexion' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'CHECKBOX',
-            'default' => 'n',
-            'value'  => [
-                0 => 'n',
-                1 => 'y',
-            ],
-        ],
-        'reseller_trend' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'CHECKBOX',
-            'default' => 'y',
-            'value'  => [
-                0 => 'n',
-                1 => 'y',
-            ],
-        ],
-        'reseller_event' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'CHECKBOX',
-            'default' => 'y',
-            'value'  => [
-                0 => 'n',
-                1 => 'y',
-            ],
-        ],
-        'reseller_smtp' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'CHECKBOX',
-            'default' => 'y',
-            'value'  => [
-                0 => 'n',
-                1 => 'y',
-            ],
-        ],
-        'reseller_alert' => [
-            'datatype' => 'VARCHAR',
-            'formtype' => 'CHECKBOX',
-            'default' => 'y',
-            'value'  => [
-                0 => 'n',
-                1 => 'y',
-            ],
-        ],
-        //#################################
         // Limits Client
         //#################################
-        'client_connexion' => [
+        'connexion' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'n',
@@ -196,7 +167,7 @@ $form["tabs"]['parameters'] = [
                 1 => 'y',
             ],
         ],
-        'client_trend' => [
+        'trend' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'y',
@@ -205,7 +176,7 @@ $form["tabs"]['parameters'] = [
                 1 => 'y',
             ],
         ],
-        'client_event' => [
+        'event' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'y',
@@ -214,7 +185,7 @@ $form["tabs"]['parameters'] = [
                 1 => 'y',
             ],
         ],
-        'client_smtp' => [
+        'smtp' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'y',
@@ -223,7 +194,7 @@ $form["tabs"]['parameters'] = [
                 1 => 'y',
             ],
         ],
-        'client_alert' => [
+        'alert' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'y',
@@ -235,6 +206,12 @@ $form["tabs"]['parameters'] = [
         //#################################
         // Limits Monitor
         //#################################
+        'limit_monitor' => [
+            'datatype' => 'VARCHAR',
+            'formtype' => 'TEXT',
+            'default' => '-1',
+            'value'  => ''
+        ],
         'limit_check_period' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'TEXT',
@@ -281,7 +258,7 @@ $form["tabs"]['parameters'] = [
             'value'  => ''
         ],
         //#################################
-        // Default SMTP
+        // SMTP
         //#################################
         'smtp_host' => [
             'datatype' => 'VARCHAR',
@@ -324,4 +301,3 @@ $form["tabs"]['parameters'] = [
         ],
 	],
 ];
-?>

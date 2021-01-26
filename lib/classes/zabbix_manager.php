@@ -31,21 +31,74 @@ class zabbix_manager
 
     protected $messages = [];
 
-    public function __construct($server,$user,$password)
+    private $shared = null;
+
+    public function __construct($host,$user,$password)
     {
-        $this->connexion_server = rtrim($server,'/');
+        $this->connexion_server = 'https://' . rtrim($host,'/');
         $this->connexion_user = $user;
         $this->connexion_password = $password;
     }
 
+    public function checkConnexion()
+    {
+        if ($this->connexion()){
+            return $this->shared ? $this->shared : true;
+        }
+        return false;
+    }
+
+    public function requestGet($method,$params,$items)
+    {
+        $this->connexion();
+        $response = $this->curl($method, $params);
+
+        if (isset($response[0])) return null;
+
+        $response = $response[0];
+
+        $items = is_array($items) ? $items : [$items];
+        $return = [];
+        $tmp = null;
+        foreach ($items as $item) {
+            $tab_items = explode(':',$item);
+            $tmp = $response;
+            foreach ($tab_items as $tab_item) {
+                if (isset($tmp->$tab_item)){
+                    $tmp = $tmp->$tab_item;
+                } elseif (isset($tmp[$tab_item])) {
+                    $tmp = $tmp[$tab_item];
+                }else{
+                    $tmp = null;
+                    break;
+                }
+            }
+            $return[$item] = $tmp;
+        }
+        return count($items) > 1 ? $return : $tmp;
+    }
+
+    public function requestChange($method,$params,$return)
+    {
+        $this->connexion();
+        $response = $this->curl($method, $params);
+        return isset($response->$return,$response->$return[0]) ? $response->$return[0] : null;
+    }
+
     protected function connexion()
     {
+        if ($this->secret) return true;
+
+        if (!$this->connexion_server) return false;
+
         $method = 'user.login';
         $params = [
             'user' => $this->connexion_user,
             'password' => $this->connexion_password,
         ];
         $this->secret = $this->curl($method, $params, 0);
+
+        return !!$this->secret;
     }
 
     protected function disconnection()
@@ -108,7 +161,13 @@ class zabbix_manager
             $this->add_messages('Server no return json data : Url Server = ' . $this->connexion_server . '/' . self::api_zabbix_api . ' it\'s correct ?','danger');
             return false;
         }
-
+        if (isset($result_json->shared)){
+            $this->shared = $result_json->shared;
+        }
+        if (isset($result_json->error)){
+            $this->add_messages($result_json->error->message . ' => ' . $result_json->error->data,'danger');
+            return false;
+        }
         return $result_json->result;
     }
 
@@ -154,5 +213,10 @@ class zabbix_manager
 
     protected function has_messages(){
         return count($this->messages);
+    }
+
+    public function __destruct()
+    {
+        $this->disconnection();
     }
 }

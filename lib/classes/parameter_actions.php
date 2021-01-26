@@ -1,4 +1,5 @@
 <?php
+// TODO: bug on client edit own parameters
 
 class parameter_actions extends tform_actions
 {
@@ -14,7 +15,7 @@ class parameter_actions extends tform_actions
 
     protected $client;
 
-    protected $list_limit = 'limit_monitor,limit_min_check_period,limit_max_retries,limit_max_timeout';
+    protected $list_limit = '';
 
     protected $user_type;
 
@@ -33,9 +34,14 @@ class parameter_actions extends tform_actions
                                         'd' => 60 * 60 * 24,
                                         'w' => 60 * 60 * 24 * 7,
                                     ];
+
     protected $regex_time_suffixes = '/(\d+)([s|m|h|d|w])/m';
 
-    protected $debug = false;
+    protected $debug = true;
+    /**
+     * @var ispconfig_zabbix
+     */
+    private $isp_zabbix;
 
     public function __construct($user_type)
     {
@@ -46,13 +52,15 @@ class parameter_actions extends tform_actions
         $this->db = $this->app->db;
         $this->tform = $this->app->tform;
 
+        $this->isp_zabbix = new ispconfig_zabbix($app);
+
         $this->user_type = in_array($user_type,['client','reseller','admin']) ? $user_type : 'client';
         $this->is_admin = $this->auth->is_admin();
         $this->is_reseller_for_client = $this->auth->has_clients($_SESSION['s']['user']['userid']) and $this->user_type == 'client';
     }
 
-    function onShow() {
-        if ($this->debug) echo '1<br>';
+    public function onShow() {
+        if ($this->debug) echo 'onShow<br>';
         if (!$this->is_admin and !$this->is_reseller_for_client and $_SESSION['s']['user']['client_id'] <> $this->id) $this->app->error($this->app->lng('error_no_view_permission'));
 
         $this->db_table = $this->tform->formDef['db_table'];
@@ -67,14 +75,14 @@ class parameter_actions extends tform_actions
             $condition_sql = $this->user_type == 'client' ? 'client.limit_client = 0' : 'client.parent_client_id = 0 AND (client.limit_client > 0 OR client.limit_client = -1)';
 
             $this->client = $this->db->queryOneRecord('SELECT 
-            CONCAT(
-                IF(client.company_name != "", CONCAT(client.company_name, " :: "), ""),
-                IF(client.contact_firstname != "", CONCAT(client.contact_firstname, " "), ""),
-                client.contact_name, " (", client.username, 
-                IF(client.customer_no != "", CONCAT(", ", client.customer_no), ""), ")"
-            ) as name, client_id, sys_userid, sys_groupid, sys_perm_user, sys_perm_group, sys_perm_other
-        FROM client 
-        WHERE client_id = ? AND ' . $condition_sql,$this->id);
+                CONCAT(
+                    IF(client.company_name != "", CONCAT(client.company_name, " :: "), ""),
+                    IF(client.contact_firstname != "", CONCAT(client.contact_firstname, " "), ""),
+                    client.contact_name, " (", client.username, 
+                    IF(client.customer_no != "", CONCAT(", ", client.customer_no), ""), ")"
+                ) as name, client_id, sys_userid, sys_groupid, sys_perm_user, sys_perm_group, sys_perm_other
+            FROM client 
+            WHERE client_id = ? AND ' . $condition_sql,$this->id);
 
             if ($this->debug) echo '2<br>';
             if(!$this->client or empty($this->client['name'])) $this->app->error($this->app->lng('error_no_view_permission'));
@@ -82,8 +90,6 @@ class parameter_actions extends tform_actions
             $this->tpl->setVar('client_name',$this->client['name']);
 
             $_SESSION['zabbix']['parameters']['id'] = $this->client[$this->db_table_idx];
-
-
 
             $this->id = ($this->db->queryOneRecord($sql, $this->db_table, $this->db_table_idx, $this->id)) ? $this->id : 0;
 
@@ -93,32 +99,64 @@ class parameter_actions extends tform_actions
         parent::onShow();
     }
 
-    function onShowNew() {
+    public function onShowNew() {
+        if ($this->debug) echo 'onShowNew<br>';
         $record = [];
         $record = $this->tform->getHTML($record, $this->tform->formDef['tab_default'], 'NEW');
         if($this->client[$this->db_table_idx] or $this->user_type == 'admin'){
             $record[$this->db_table_idx] = $this->user_type == 'admin' ? 1 : $this->client[$this->db_table_idx];
 
             $this->tpl->setVar($record);
-            $this->dataRecord['limit_monitor'] = 'SELECT count(domain_id) as nbr domain FROM web_domain WHERE web_domain.type = \'vhost\' AND `active`="y" AND {AUTHSQL::web_domain} ';
+            //$this->dataRecord['limit_monitor'] = 'SELECT count(domain_id) as nbr domain FROM web_domain WHERE web_domain.type = \'vhost\' AND `active`="y" AND {AUTHSQL::web_domain} ';
+
         } else{
             if ($this->debug) echo '3<br>';
             $this->app->error($this->app->lng('error_no_view_permission'));
         }
     }
 
-    function onSubmit() {
+    public function onShowEdit()
+    {
+        if ($this->debug) echo 'onShowEdit<br>';
+        //echo '##########<br>';
+        //print_r($this->dataRecord);
+        //echo '##########<br>';
+        parent::onShowEdit(); // TODO: Change the autogenerated stub
+        //print_r($this->dataRecord);
+        //echo '##########<br>';
+
+    }
+
+    public function onSubmit() {
+        if ($this->debug) echo 'onSubmit<br>';
+        $this->db_table = $this->tform->formDef['db_table'];
+        $this->db_table_idx = $this->tform->formDef['db_table_idx'];
+
+        $this->dataRecord[$this->db_table_idx] = $this->dataRecord[$this->db_table_idx] ? $this->dataRecord[$this->db_table_idx] : $this->id;
+
         if (!isset($_SESSION['zabbix']['parameters']['id']) or $_SESSION['zabbix']['parameters']['id'] <> $this->dataRecord[$this->db_table_idx]){
             if (isset($_SESSION['zabbix']['parameters']['id'])) unset($_SESSION['zabbix']['parameters']['id']);
-            if ($this->debug) echo '4<br>';
+            if ($this->debug) {
+                print_r($this);
+                echo '4<br>';
+            }
             $this->app->error($this->app->lng('error_no_view_permission'));
         }
-        if ($this->user_type <> 'admin')  $this->validation_admin_limit();
-
+        if ($this->user_type == 'admin') {
+            $this->dataRecord = $this->isp_zabbix->checkAdmin($this->dataRecord);
+        } else {
+            $this->dataRecord = $this->isp_zabbix->checkLimits($this->dataRecord);
+        }
+        $this->dataRecord[$this->db_table_idx] = $_SESSION['zabbix']['parameters']['id'];
+        $messages = $this->isp_zabbix->getMessages();
+        if ($messages){
+            $this->app->tform->errorMessage = $messages;
+        }
         parent::onSubmit();
     }
 
-    function onBeforeInsert() {
+    public function onBeforeInsert() {
+        if ($this->debug) echo 'onBeforeInsert<br>';
         if ($_SESSION['zabbix']['parameters']['id'] == $this->dataRecord[$this->db_table_idx]){
             $this->id = $this->dataRecord[$this->db_table_idx];
         } else{
@@ -129,21 +167,33 @@ class parameter_actions extends tform_actions
 
     }
 
-    function onAfterInsert() {
+    public function onAfterInsert() {
+        if ($this->debug) echo 'onAfterInsert<br>';
         if ($_SESSION['zabbix']['parameters']['id'] == $this->dataRecord[$this->db_table_idx]){
             $this->id = $this->dataRecord[$this->db_table_idx];
         } else{
             unset($_SESSION['zabbix']['parameters']['id']);
-            if ($this->debug) echo '5<br>';
+            if ($this->debug) echo '6<br>';
             $this->app->error($this->app->lng('error_no_view_permission'));
+        }
+        if(!$this->isp_zabbix->insertClient($this->dataRecord)){
+
         }
     }
 
-    function onAfterUpdate() {
+    public function onAfterUpdate() {
+        if ($this->debug) echo 'onAfterUpdate<br>';
+        if(!$this->isp_zabbix->updateClient($this->dataRecord)){
+
+        }
         if ($this->user_type <> 'admin') $this->zabbix_addon_acces('add');
     }
 
-    function onAfterDelete() {
+    public function onAfterDelete() {
+        if ($this->debug) echo 'onAfterDelete<br>';
+        if(!$this->isp_zabbix->removeClient($this->dataRecord)){
+
+        }
         if ($this->user_type <> 'admin') $this->zabbix_addon_acces('remove');
     }
 

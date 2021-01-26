@@ -37,9 +37,19 @@
 Parameters list
 Admin
     Server
+        zabbix_shared
         zabbix_host
         zabbix_user
         zabbix_pwd
+
+    Email
+        receiver
+
+    Message
+        alert_subject
+        alert_content
+        recovery_subject
+        recovery_content
 
     Constant
         glue
@@ -49,25 +59,8 @@ Admin
         application_keyword
         trigger_keyword
 
-    Limits Admin
-        mutu
-        nbr_monitor
-
-    Limits Reseller
-        reseller_connexion
-        reseller_trend
-        reseller_event
-        reseller_smtp
-        reseller_alert
-
-    Limits Client
-        client_connexion
-        client_trend
-        client_event
-        client_smtp
-        client_alert
-
     Limits Monitor
+        monitor
         periode_check
         retries
         timeout
@@ -88,10 +81,10 @@ Admin
 
 User
     connexion
-        user
-        pwd
+        zabbix_user
+        zabbix_pwd
 
-    email
+    Email
         receiver
 
     Message
@@ -103,16 +96,29 @@ User
     Constant
         httptest_keyword
         step_keyword
-        trigger_keyword
         application_keyword
+        trigger_keyword
 
-    Default
+    Limits Client
+        connexion
+        trend
+        event
+        alert
+        smtp
+
+    Limits Monitor
+        nbr_monitor
+        periode_check
+        retries
+        timeout
+
+    Default Monitor
         periode_check
         retries
         timeout
         code_status
 
-    Email
+    SMTP
         smtp_host
         smtp_port
         smtp_ssl

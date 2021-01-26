@@ -1,9 +1,13 @@
 <?php
 $wb['title_zabbix_server_connexion_txt'] = 'Zabbix Server Connexion';
-$wb['zabbix_shared_txt'] = 'Use the Shared Zabbix';
+$wb['connexion_txt'] = 'Access to Zabbix directly';
+$wb['trend_txt'] = 'Access to the trends';
+$wb['event_txt'] = 'Access to the events';
+$wb['alert_txt'] = 'Reveice the Alerts emails';
+$wb['smtp_txt'] = 'Can setup a own SMTP server';
 $wb['zabbix_host_txt'] = 'Host (ex : zabbix.yourdomaine.com)';
-$wb['zabbix_user_txt'] = 'Admin user';
-$wb['zabbix_pwd_txt'] = 'Admin password';
+$wb['zabbix_user_txt'] = 'User';
+$wb['zabbix_pwd_txt'] = 'Password';
 $wb['title_zabbix_email_txt'] = 'Email';
 $wb['receiver_txt'] = 'Email receiver';
 $wb['alert_subject_txt'] = 'Alert subject';
