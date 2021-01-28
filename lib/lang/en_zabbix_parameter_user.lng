@@ -1,36 +1,40 @@
 <?php
 $wb['title_zabbix_server_connexion_txt'] = 'Zabbix Server Connexion';
-$wb['connexion_txt'] = 'Access to Zabbix directly';
-$wb['trend_txt'] = 'Access to the trends';
-$wb['event_txt'] = 'Access to the events';
-$wb['alert_txt'] = 'Reveice the Alerts emails';
-$wb['smtp_txt'] = 'Can setup a own SMTP server';
-$wb['zabbix_host_txt'] = 'Host (ex : zabbix.yourdomaine.com)';
 $wb['zabbix_user_txt'] = 'User';
 $wb['zabbix_pwd_txt'] = 'Password';
+
 $wb['title_zabbix_email_txt'] = 'Email';
 $wb['receiver_txt'] = 'Email receiver';
 $wb['alert_subject_txt'] = 'Alert subject';
 $wb['alert_content_txt'] = 'Alert content';
 $wb['recovery_subject_txt'] = 'Recovery content';
 $wb['recovery_content_txt'] = 'Recovery content';
+
 $wb['title_zabbix_constants_txt'] = 'Constants Keyword';
-$wb['isp_glue_txt'] = 'Glue Charactere';
-$wb['isp_keyword_txt'] = 'ISP Keyword';
 $wb['httptest_keyword_txt'] = 'Http test Keyword';
 $wb['step_keyword_txt'] = 'Step Keyword';
 $wb['application_keyword_txt'] = 'Application Keyword';
 $wb['trigger_keyword_txt'] = 'Trigger Keyword';
+
+$wb['title_zabbix_limits_client_txt'] = 'Limits Client';
+$wb['enable_connexion_txt'] = 'Access to Zabbix directly';
+$wb['enable_trend_txt'] = 'Access to the trends';
+$wb['enable_event_txt'] = 'Access to the events';
+$wb['enable_alert_txt'] = 'Reveice the Alerts emails';
+$wb['enable_smtp_txt'] = 'Can setup a own SMTP server';
+
 $wb['title_zabbix_limits_monitor_txt'] = 'Limits Monitor';
 $wb['limit_monitor_txt'] = 'Monitor Number';
 $wb['limit_check_period_txt'] = 'Limit Min Chack Period';
 $wb['limit_retries_txt'] = 'Limit Max Retries';
 $wb['limit_timeout_txt'] = 'Limit Max timeout';
+
 $wb['title_zabbix_default_monitor_txt'] = 'Default Monitor';
 $wb['default_check_period_txt'] = 'Default Chack Period';
 $wb['default_retries_txt'] = 'Default Retries';
-$wb['limit_timeout_txt'] = 'Default Timeout';
+$wb['default_timeout_txt'] = 'Default Timeout';
 $wb['default_status_codes_txt'] = 'Default Status Codes';
+
 $wb['title_zabbix_default_smtp_txt'] = 'Default SMTP';
 $wb['smtp_host_txt'] = 'SMTP Host';
 $wb['smtp_port_txt'] = 'SMTP Port';

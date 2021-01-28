@@ -56,15 +56,15 @@ $form["tabs"]['parameters'] = [
 	'template'  => "templates/parameter_user_edit.htm",
 	'readonly' => false,
 	'fields'  => [
-		//#################################
-		// Zabbix Connexion
-		//#################################
         'client_id' => [
             'datatype' => 'INTEGER',
             'formtype' => 'HIDDEN',
             'default' => '',
             'value'  => ''
         ],
+        //#################################
+        // Zabbix Connexion
+        //#################################
         'zabbix_user' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'TEXT',
@@ -158,7 +158,7 @@ $form["tabs"]['parameters'] = [
         //#################################
         // Limits Client
         //#################################
-        'connexion' => [
+        'enable_connexion' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'n',
@@ -167,7 +167,7 @@ $form["tabs"]['parameters'] = [
                 1 => 'y',
             ],
         ],
-        'trend' => [
+        'enable_trend' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'y',
@@ -176,7 +176,7 @@ $form["tabs"]['parameters'] = [
                 1 => 'y',
             ],
         ],
-        'event' => [
+        'enable_event' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'y',
@@ -185,7 +185,7 @@ $form["tabs"]['parameters'] = [
                 1 => 'y',
             ],
         ],
-        'smtp' => [
+        'enable_smtp' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'y',
@@ -194,7 +194,7 @@ $form["tabs"]['parameters'] = [
                 1 => 'y',
             ],
         ],
-        'alert' => [
+        'enable_alert' => [
             'datatype' => 'VARCHAR',
             'formtype' => 'CHECKBOX',
             'default' => 'y',

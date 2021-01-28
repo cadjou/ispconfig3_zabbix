@@ -28,7 +28,7 @@
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseServer"
                            aria-expanded="true" aria-controls="collapseServer">
-                            Server Zabbix Connexion
+                            {tmpl_var name='title_zabbix_server_connexion_txt'}
                         </a>
                     </h4>
                 </div>
@@ -60,7 +60,7 @@
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseEmail"
                            aria-expanded="false" aria-controls="collapseEmail">
-                            Email
+                            {tmpl_var name='title_zabbix_email_txt'}
                         </a>
                     </h4>
                 </div>
@@ -120,7 +120,7 @@
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseConstants"
                            aria-expanded="false" aria-controls="collapseConstants">
-                            Constants
+                            {tmpl_var name='title_zabbix_constants_txt'}
                         </a>
                     </h4>
                 </div>
@@ -168,7 +168,7 @@
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseLimitReseller"
                            aria-expanded="false" aria-controls="collapseLimitReseller">
-                            Client limits
+                            {tmpl_var name='title_zabbix_limits_client_txt'}
                         </a>
                     </h4>
                 </div>
@@ -176,38 +176,38 @@
                      aria-labelledby="headingLimitReseller">
                     <div class="panel-body">
                         <div class="form-group">
-                            <label for="connexion" class="col-sm-3 control-label">{tmpl_var
-                                name='connexion_txt'}</label>
+                            <label for="enable_connexion" class="col-sm-3 control-label">{tmpl_var
+                                name='enable_connexion_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='connexion'}
+                                {tmpl_var name='enable_connexion'}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="trend" class="col-sm-3 control-label">{tmpl_var
-                                name='trend_txt'}</label>
+                            <label for="enable_trend" class="col-sm-3 control-label">{tmpl_var
+                                name='enable_trend_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='trend'}
+                                {tmpl_var name='enable_trend'}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="event" class="col-sm-3 control-label">{tmpl_var
-                                name='event_txt'}</label>
+                            <label for="enable_event" class="col-sm-3 control-label">{tmpl_var
+                                name='enable_event_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='event'}
+                                {tmpl_var name='enable_event'}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="alert" class="col-sm-3 control-label">{tmpl_var
-                                name='alert_txt'}</label>
+                            <label for="enable_alert" class="col-sm-3 control-label">{tmpl_var
+                                name='enable_alert_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='alert'}
+                                {tmpl_var name='enable_alert'}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="smtp" class="col-sm-3 control-label">{tmpl_var
-                                name='smtp_txt'}</label>
+                            <label for="enable_smtp" class="col-sm-3 control-label">{tmpl_var
+                                name='enable_smtp_txt'}</label>
                             <div class="col-sm-9">
-                                {tmpl_var name='smtp'}
+                                {tmpl_var name='enable_smtp'}
                             </div>
                         </div>
                     </div>
@@ -219,7 +219,7 @@
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseLimitMonitor"
                            aria-expanded="false" aria-controls="collapseLimitMonitor">
-                            Default Monitor limits
+                            {tmpl_var name='title_zabbix_limits_monitor_txt'}
                         </a>
                     </h4>
                 </div>
@@ -267,7 +267,7 @@
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseDefaultMonitor"
                            aria-expanded="false" aria-controls="collapseDefaultMonitor">
-                            Default Monitor Parameters
+                            {tmpl_var name='title_zabbix_default_monitor_txt'}
                         </a>
                     </h4>
                 </div>
@@ -315,7 +315,7 @@
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseDefaultSMTP"
                            aria-expanded="false" aria-controls="collapseDefaultSMTP">
-                            Defautl SMTP
+                            {tmpl_var name='title_zabbix_default_smtp_txt'}
                         </a>
                     </h4>
                 </div>
@@ -380,9 +380,11 @@
             <div class="right">
                 <button class="btn btn-default formbutton-success" type="button"
                         value="{tmpl_var name='btn_save_txt'}"
-                        data-submit-form="pageForm" data-form-action="zabbix/parameter_user_edit.php">{tmpl_var
+                        data-submit-form="pageForm" data-form-action="zabbix/parameter_user_edit.php?type=tmpl_var
+                    name='type_form'}">{tmpl_var
                     name='btn_save_txt'}
                 </button>
+                <!-- TODO : Change link after cancel -->
                 <button class="btn btn-default formbutton-default" type="button"
                         value="{tmpl_var name='btn_cancel_txt'}"
                         data-load-content="zabbix/parameter_user_edit.php">{tmpl_var name='btn_cancel_txt'}
