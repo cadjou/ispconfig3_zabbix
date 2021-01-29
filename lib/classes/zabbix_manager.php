@@ -35,6 +35,9 @@ class zabbix_manager
 
     public function __construct($host,$user,$password)
     {
+        if (!function_exists('curl_init')) {
+            die('Need Curl extension');
+        }
         $this->connexion_server = 'https://' . rtrim($host,'/');
         $this->connexion_user = $user;
         $this->connexion_password = $password;
@@ -48,8 +51,12 @@ class zabbix_manager
         return false;
     }
 
-    public function requestGet($method,$params,$items)
+    public function requestGet($request)
     {
+        $method = $request['method'];
+        $params = $request['params'];
+        $items = $request['items'];
+
         $this->connexion();
         $response = $this->curl($method, $params);
 
@@ -64,11 +71,13 @@ class zabbix_manager
             $tab_items = explode(':',$item);
             $tmp = $response;
             foreach ($tab_items as $tab_item) {
-                if (isset($tmp->$tab_item)){
+                if ($tab_item == '*'){
+                    break;
+                } elseif (isset($tmp->$tab_item)){
                     $tmp = $tmp->$tab_item;
                 } elseif (isset($tmp[$tab_item])) {
                     $tmp = $tmp[$tab_item];
-                }else{
+                } else {
                     $tmp = null;
                     break;
                 }
@@ -78,11 +87,14 @@ class zabbix_manager
         return count($items) > 1 ? $return : $tmp;
     }
 
-    public function requestChange($method,$params,$return)
+    public function requestChange($request)
     {
+        $method = $request['method'];
+        $params = $request['params'];
+        $items = $request['items'];
         $this->connexion();
         $response = $this->curl($method, $params);
-        return isset($response->$return,$response->$return[0]) ? $response->$return[0] : null;
+        return isset($response->$items,$response->$items[0]) ? $response->$items[0] : null;
     }
 
     protected function connexion()
@@ -211,7 +223,7 @@ class zabbix_manager
         return '<div>' . implode("\n",$return) . '</div>';
     }
 
-    protected function has_messages(){
+    public function has_messages(){
         return count($this->messages);
     }
 

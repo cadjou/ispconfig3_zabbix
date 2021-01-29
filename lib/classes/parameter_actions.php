@@ -176,25 +176,26 @@ class parameter_actions extends tform_actions
             if ($this->debug) echo '6<br>';
             $this->app->error($this->app->lng('error_no_view_permission'));
         }
-        if(!$this->isp_zabbix->insertClient($this->dataRecord)){
-
+        $status = $this->isp_zabbix->runZabbixLink($this->dataRecord);
+        if(!is_bool($status) or !$status){
+            $this->app->error($status);
         }
     }
 
     public function onAfterUpdate() {
         if ($this->debug) echo 'onAfterUpdate<br>';
-        if(!$this->isp_zabbix->updateClient($this->dataRecord)){
-
+        $status = $this->isp_zabbix->runZabbixLink($this->dataRecord);
+        if(!is_bool($status) or !$status){
+            $this->app->error($status);
         }
-        if ($this->user_type <> 'admin') $this->zabbix_addon_acces('add');
     }
 
     public function onAfterDelete() {
         if ($this->debug) echo 'onAfterDelete<br>';
-        if(!$this->isp_zabbix->removeClient($this->dataRecord)){
-
+        $status = $this->isp_zabbix->runZabbixUnlink($this->dataRecord);
+        if(!is_bool($status) or !$status){
+            $this->app->error($status);
         }
-        if ($this->user_type <> 'admin') $this->zabbix_addon_acces('remove');
     }
 
     protected function parse_time_suffixes($time,$default = null){

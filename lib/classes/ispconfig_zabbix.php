@@ -102,16 +102,6 @@ class ispconfig_zabbix
         return $admin_data->getArrayData();
     }
 
-    public function getZabbixConnexion(){
-        if ($this->zabbix_manager) return $this->zabbix_manager;
-
-        $admin_data = $this->getAdminParams();
-
-        $this->zabbix_manager = new zabbix_manager($admin_data->getZabbixHost(),$admin_data->getZabbixUser(),$admin_data->getZabbixPwd());
-
-        return $this->zabbix_manager;
-    }
-
     public function checkLimits($data)
     {
         $client_data = $this->getZabbixParams($data);
@@ -125,49 +115,28 @@ class ispconfig_zabbix
         return $client_data->getArrayData();
     }
 
-    public function insertClient($data)
+    public function runZabbixLink($data)
     {
-        $zabbix_params = $this->getZabbixParams($data);
-        $this->getZabbixConnexion();
-        if ($zabbix_params->getType() == 'admin') {
-            // MediaType
+        $zp = $this->getZabbixParams($data);
 
-            // creer UserGroup
-            $zabbix_params->setUsrGrpId($this->zabbix_manager->requestChange('usergroup.create',$zabbix_params->_getGroupUser(),'usrgrpids'));
+        // MediaType
+        $zp->mediaType();
+        // UserGroup
+        $zp->userGroup();
+        // User
+        $zp->user();
 
-            // Get Id Admin et les emails
-            $response = $this->zabbix_manager->requestGet('user.get',$zabbix_params->_getUser(),['userid','medias']);
-            $zabbix_params->setUsrId($response['userid']);
-            $zabbix_params->setMedias($response['medias']);
-            // set Email du user
-            $this->zabbix_manager->requestChange('user.update',$zabbix_params->_updateUser(),'userid');
-
-        } elseif (!empty($data['client_id'])) {
-            // creer UserGroup
-            // creer User
-            //      set login
-            //      set pwd
-            //      set Email
-            $this->zabbix_addon_acces('add',$data['client_id']);
+        if (!$zp->has_messages()){
+            if (!empty($data['client_id'])) $this->zabbix_addon_acces('add',$data['client_id']);
+            return true;
         }
-        // Save UserGroup id
-        // Save User id
-        if (!empty($data['smtp_host'])){
-            // creer MediaType
-        }
-        return true;
+        return $zp->get_messages_html();
     }
 
-    public function updateClient($data)
+    public function runZabbixUnlink($data)
     {
         return true;
     }
-
-    public function removeClient($data)
-    {
-        return true;
-    }
-
 
     public function getMessages()
     {
@@ -175,7 +144,44 @@ class ispconfig_zabbix
     }
 
     protected function getZabbixParams($data){
-        return new zabbix_parameter($data);
+        $clientInfo = $reseller = $admin = [];
+        if(isset($data['client_id'])){
+            $sql = 'SELECT company_name,contact_firstname,contact_name,email,parent_client_id,username FROM client WHERE client_id = ?';
+            $clientInfo = $this->db->queryOneRecord($sql,$data['client_id']);
+
+            if (!empty($clientInfo['parent_client_id'])){
+                $reseller = $this->getResellerParams($clientInfo['parent_client_id']);
+            }
+
+            $admin = $this->getAdminParams();
+        }
+        return new zabbix_parameter($data,$clientInfo,$reseller,$admin);
+    }
+
+
+    protected function getAdminParams(){
+        if ($this->admin_params) $this->admin_params;
+
+        $sql = 'SELECT * FROM zabbix_server WHERE server_id = 1';
+        $this->admin_params = $this->getZabbixParams($this->db->queryOneRecord($sql));
+        return $this->admin_params;
+    }
+
+    protected function getResellerParams($client_id)
+    {
+        if ($this->reseller_params) return $this->reseller_params;
+
+        if (!$this->auth->has_clients($client_id)){
+            $response = $this->db->queryOneRecord('SELECT parent_client_id FROM client WHERE client.client_id = ?', $client_id);
+            if (!empty($response['parent_client_id'])){
+                $this->reseller_params = $this->getZabbixParams($this->db->queryOneRecord('SELECT * FROM zabbix_client WHERE client_id = ?', $response['parent_client_id']));
+                return $this->reseller_params;
+            }
+            else {
+                $this->messages = '<br> Not find the reseller';
+            }
+        }
+        return false;
     }
 
     protected function zabbix_addon_acces($action,$client_id){
@@ -199,31 +205,6 @@ class ispconfig_zabbix
         if ($sql){
             $this->db->query(implode(';',$sql));
         }
-    }
-
-    protected function getAdminParams(){
-        if ($this->admin_params) $this->admin_params;
-
-        $sql = 'SELECT * FROM zabbix_server WHERE server_id = 1';
-        $this->admin_params = $this->getZabbixParams($this->db->queryOneRecord($sql));
-        return $this->admin_params;
-    }
-
-    protected function getResellerParams($client_id)
-    {
-        if ($this->reseller_params) return $this->reseller_params;
-
-        if (!$this->auth->has_clients($client_id)){
-            $response = $this->db->queryOneRecord('SELECT parent_client_id FROM client WHERE client.client_id = ?', $client_id);
-            if (!empty($response['parent_client_id'])){
-                $this->reseller_params = $this->getZabbixParams($this->db->queryOneRecord('SELECT * FROM zabbix_client WHERE zabbix_client.client_id = ?', $response['parent_client_id']));
-                return $this->reseller_params;
-            }
-            else {
-                $this->messages = '<br> Not find the reseller';
-            }
-        }
-        return false;
     }
 
     public function getClientParams($client_id){

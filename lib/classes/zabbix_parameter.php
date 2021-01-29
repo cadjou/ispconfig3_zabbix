@@ -4,17 +4,20 @@
 class zabbix_parameter
 {
     // Parameters
+
     // Connexion
     protected $zabbix_shared;
     protected $zabbix_host;
     protected $zabbix_user;
     protected $zabbix_pwd;
+
     // Email
     protected $receiver;
     protected $alert_subject;
     protected $alert_content;
     protected $recovery_subject;
     protected $recovery_content;
+
     // Constants
     protected $isp_glue;
     protected $isp_keyword;
@@ -22,16 +25,26 @@ class zabbix_parameter
     protected $step_keyword;
     protected $application_keyword;
     protected $trigger_keyword;
+
+    // Limits Client
+    protected $enable_connexion;
+    protected $enable_trend;
+    protected $enable_event;
+    protected $enable_smtp;
+    protected $enable_alert;
+
     // Limits Monitor
     protected $limit_monitor;
     protected $limit_check_period;
     protected $limit_retries;
     protected $limit_timeout;
+
     // Default Monitor
     protected $default_check_period;
     protected $default_retries;
     protected $default_timeout;
     protected $default_status_codes;
+
     // Default SMTP
     protected $smtp_host;
     protected $smtp_port;
@@ -40,43 +53,86 @@ class zabbix_parameter
     protected $smtp_pwd;
     protected $smtp_sender;
 
+    // Id Zabbix
+    protected $id_mediatype;
+    protected $id_usergroup;
+    protected $id_user;
+
+    // Internal Parameters
     protected $data;
+    protected $infoClient;
+    protected $reseller;
+    protected $admin;
     protected $type;
-    private $id;
+    protected $id;
+
+    // Temporal Parameters
+    protected $_medias = [];
+    protected $_usrgrps = [];
+
+    /**
+     * @var zabbix_manager
+     */
+    protected $_zm;
 
     /**
      * zabbix_parameter constructor.
      * @param array $data
+     * @param array $infoClient
+     * @param zabbix_parameter $reseller
+     * @param zabbix_parameter $admin
      */
-    public function __construct(array $data)
+    public function __construct(array $data, array $infoClient, $reseller, $admin)
     {
         $this->data = $data;
-        $missing_param=[];
+        $this->infoClient = $infoClient ? $infoClient : ['null'];
+        $this->reseller = $reseller ? $reseller : 'null';
+        $this->admin = $admin ? $admin : 'null';
+
+        if (!empty($data['client_id']) and !$this->hasAdmin()) die('Missing Admin Setup');
+
+        $missing_param = [];
         if (!empty($data['admin_id'])){
+            $this->enable_connexion = 'y';
+            $this->enable_trend = 'y';
+            $this->enable_event = 'y';
+            $this->enable_smtp = 'y';
+            $this->enable_alert = 'y';
+
             $this->type = 'admin';
             $this->id = $data['admin_id'];
         }elseif (!empty($data['client_id'])){
+            // Init var unused
             $this->zabbix_shared = 'null';
             $this->zabbix_host = 'null';
-            $this->isp_glue = 'null';
-            $this->isp_keyword = 'null';
+
+            $this->isp_glue = $this->admin->getIspGlue();
+            $this->isp_keyword = $this->admin->getIspKeyword();
+
             $this->type = 'client';
             $this->id = $data['client_id'];
         }
         foreach ($this as $param=>$v) {
+
+            if ($this->isTemporalParam($param)) continue;
+
             if (!$v and isset($data[$param])) {
                 $this->$param = $data[$param];
             }elseif(!$v) {
                 $missing_param[] = $param;
             }
         }
-
         // Die if missing parameter in $data
         // TODO : Improve error management
         if ($missing_param) die('Missing Parameters : ' . nl2br(print_r($missing_param, true)));
 
+        if($this->type == 'admin') $this->admin = $this;
+        $this->getZabbixConnexion();
     }
 
+    // **********
+    // Internal Parameters Getters
+    // **********
     /**
      * @return array
      */
@@ -104,55 +160,470 @@ class zabbix_parameter
     }
 
     // **********
+    // Info Client
+    // **********
+
+    protected function getInfoClient($item)
+    {
+        if (!isset($this->infoClient[$item])) return false;
+        return $this->infoClient[$item];
+    }
+
+    // **********
+    // Reseller
+    // **********
+
+    protected function hasReseller()
+    {
+        return is_object($this->reseller) and $this->reseller instanceof zabbix_parameter;
+    }
+
+    // **********
+    // Admin
+    // **********
+
+    protected function hasAdmin()
+    {
+        return is_object($this->admin) and $this->admin instanceof zabbix_parameter;
+    }
+
+    public function getZabbixConnexion()
+    {
+        if ($this->_zm) return $this->_zm;
+
+        $this->_zm = new zabbix_manager($this->admin->getZabbixHost(),$this->admin->getZabbixUser(),$this->admin->getZabbixPwd());
+        return $this->_zm;
+    }
+
+    // **********
     // MediaType
     // **********
-    public function getMediaTypeId(){
+
+    public function mediaType()
+    {
+        $data = false;
+        $findbys = ['id','name'];
+        foreach ($findbys as $findby) {
+            $var = $this->_forGetMediaType($findby);
+            if (!$var) continue;
+
+            $data = $this->_zm->requestGet($var);
+            if ($data) break;
+        }
+        if (!empty($data['mediatypeid'])) $this->setIdMediatype($data['mediatypeid']);
+
+        $zp = $this->whereMediatype();
+
+        if ($this == $zp) {
+            if(!$data){
+                $data = $this->_zm->requestChange($this->_forCreateMediaType());
+            }else{
+                $needUpdate = $this->_needUpdateMediaType($data);
+                if ($needUpdate) {
+                    $this->_zm->requestChange($needUpdate);
+                }
+            }
+        } else {
+            $data = false;
+            foreach ($findbys as $findby) {
+                $var = $zp->_forGetMediaType($findby);
+                if (!$var) continue;
+
+                $data = $this->_zm->requestGet($var);
+                if ($data) break;
+            }
+            if(!$data){
+                $data = $this->_zm->requestChange($zp->_forCreateMediaType());
+            }else{
+                $needUpdate = $zp->_needUpdateMediaType($data);
+                if ($needUpdate) {
+                    $this->_zm->requestChange($needUpdate);
+                }
+                // $zp->_needchangeChild(); // TODO : Manage the change ID in the action
+                $this->_zm->requestChange($this->_forDeleteMediaType());
+            }
+        }
+
+        if (empty($data['mediatypeids'])) die('Cannot create MediaType');
+
+        $this->setIdMediatype($data['mediatypeids']);
+    }
+
+    public function _needUpdateMediaType($data)
+    {
+        $init = [
+            'name' => $this->_makeMediaTypeName(),
+            'smtp_server' => $this->getSmtpHost(),
+            'smtp_port' => $this->getSmtpPort(),
+            'smtp_security' => $this->getSmtpSsl(),
+            'smtp_helo' => $this->getSmtpHost(),
+            'smtp_email' => $this->getSmtpSender(),
+            'username' => $this->getSmtpUser(),
+            'passwd' => $this->getSmtpPwd(),
+        ];
+        $need_change = [];
+        foreach ($data as $key=>$value){
+            if (isset($init[$key]) and $init[$key] <> $value) {
+                $need_change[$key] = $init[$key];
+            }
+        }
+        if ($need_change){
+            $need_change['mediatypeid'] = $data['mediatypeid'];
+            return $this->_forUpdateMediaType($need_change);
+        }
         return false;
+    }
+
+    public function whereMediatype()
+    {
+        if ($this->getEnableSmtp() and $this->getSmtpHost()){
+            return $this;
+        } elseif ($this->hasReseller() and $this->reseller->getEnableSmtp() and $this->getSmtpHost()){
+            return $this->reseller;
+        } else {
+            return $this->admin;
+        }
+    }
+
+    public function _makeMediaTypeName(){
+        return implode($this->getIspGlue(), [$this->getIspKeyword(), $this->getId()]);
+    }
+
+    public function _forGetMediaType($findby)
+    {
+        $return['method'] = 'mediatype.get';
+        if ($findby == 'id'){
+            if (!$this->getIdMediatype()) return false;
+            $return['params'] = ['mediatypeids' => $this->getIdMediatype()];
+        } elseif ($findby == 'name') {
+            $return['params'] = ['filter' => ['name' => $this->_makeMediaTypeName()]];
+        } else {
+            return false;
+        }
+        $return['items'] = '*';
+        return $return;
+    }
+
+    public function _forCreateMediaType()
+    {
+        $return['method'] = 'mediatype.create';
+        $return['params'] = [
+            'name' => $this->_makeMediaTypeName(),
+            'type' => 0,
+            'smtp_server' => $this->getSmtpHost(),
+            'smtp_port' => $this->getSmtpPort(),
+            'smtp_security' => $this->getSmtpSsl(),
+            'smtp_helo' => $this->getSmtpHost(),
+            'smtp_email' => $this->getSmtpSender(),
+            'username' => $this->getSmtpUser(),
+            'passwd' => $this->getSmtpPwd(),
+            'smtp_authentication' => 1, // TODO : Manage anonymus
+        ];
+        $return['items'] = 'mediatypeids';
+        return $return;
+    }
+
+    public function _forUpdateMediaType($params)
+    {
+        $return['method'] = 'mediatype.update';
+        $return['params'] = $params;
+        $return['items'] = 'mediatypeids';
+        return $return;
+    }
+
+    public function _forDeleteMediaType()
+    {
+        $return['method'] = 'mediatype.delete';
+        $return['params'] = [$this->getIdMediatype()];
+        $return['items'] = 'mediatypeids';
+        return $return;
+    }
+
+    public function _needchangeChild()
+    {
+        return null;
     }
 
     // **********
     // UserGroup
     // **********
-    public function setUsrGrpId($usrgrpid): void
+
+    public function userGroup()
     {
-        $this->_usrgrpid = $usrgrpid;
+        $data = false;
+        $findbys = ['id','name'];
+        foreach ($findbys as $findby) {
+            $var = $this->_forGetUserGroup($findby);
+            if (!$var) continue;
+
+            $data = $this->_zm->requestGet($var);
+            if ($data) break;
+        }
+        if (!empty($data['usrgrpid'])) $this->setIdUsergroup($data['usrgrpid']);
+
+        $zp = $this->whereUserGroup();
+
+        if ($this == $zp) {
+            if(!$data){
+                $data = $this->_zm->requestChange($this->_forCreateUserGroup());
+            }else{
+                $needUpdate = $this->_needUpdateUserGroup($data);
+                if ($needUpdate) {
+                    $this->_zm->requestChange($needUpdate);
+                }
+            }
+        } else {
+            $data = false;
+            foreach ($findbys as $findby) {
+                $var = $zp->_forGetUserGroup($findby);
+                if (!$var) continue;
+
+                $data = $this->_zm->requestGet($var);
+                if ($data) break;
+            }
+            if(!$data){
+                $data = $this->_zm->requestChange($zp->_forCreateUserGroup());
+            }else{
+                $needUpdate = $zp->_needUpdateUserGroup($data);
+                if ($needUpdate) {
+                    $this->_zm->requestChange($needUpdate);
+                }
+                // $zp->_needchangeChild(); // TODO : Manage the change ID in the action
+                $this->_zm->requestChange($this->_forDeleteUserGroup());
+            }
+        }
+
+        if (empty($data['usrgrpid'])) die('Cannot create UserGroup');
+
+        $this->setIdMediatype($data['usrgrpid']);
     }
 
-    public function _getGroupUser()
+    public function whereUserGroup()
     {
-        return ['name' => implode($this->getIspGlue(), [$this->getIspKeyword(), $this->getId()])];
+        return $this->hasReseller() ? $this->reseller : $this;
+    }
+
+    public function _needUpdateUserGroup($data)
+    {
+        $init = [
+            'name' => $this->_makeUserGroupName(),
+        ];
+        $need_change = [];
+        foreach ($data as $key=>$value){
+            if (isset($init[$key]) and $init[$key] <> $value) {
+                $need_change[$key] = $init[$key];
+            }
+        }
+        if ($need_change){
+            $need_change['usrgrpid'] = $data['usrgrpid'];
+            return $this->_forUpdateUserGroup($need_change);
+        }
+        return false;
+    }
+
+    public function _makeUserGroupName(){
+        return implode($this->getIspGlue(), [$this->getIspKeyword(), $this->getId()]);
+    }
+
+    public function _forGetUserGroup($findby)
+    {
+        $return['method'] = 'usergroup.get';
+        if ($findby == 'id'){
+            if (!$this->getIdUsergroup()) return false;
+            $return['params'] = ['usrgrpids' => $this->getIdUsergroup()];
+        } elseif ($findby == 'name') {
+            $return['params'] = ['filter' => ['name' => $this->_makeUserGroupName()]];
+        } else {
+            return false;
+        }
+        $return['items'] = '*';//'usrgrpid';
+        return $return;
+    }
+
+    public function _forCreateUserGroup()
+    {
+        $return['method'] = 'usergroup.create';
+        $return['params'] = [
+            'name' => $this->_makeUserGroupName(),
+        ];
+        $return['items'] = 'usrgrpids';
+        return $return;
+    }
+
+    public function _forUpdateUserGroup($params)
+    {
+        $return['method'] = 'usergroup.update';
+        $return['params'] = $params;
+        $return['items'] = 'usrgrpids';
+        return $return;
+    }
+
+    public function _forDeleteUserGroup()
+    {
+        $return['method'] = 'usergroup.delete';
+        $return['params'] = [$this->getIdUsergroup()];
+        $return['items'] = 'usrgrpids';
+        return $return;
     }
 
     // **********
     // User
     // **********
-    public function setUsrId($value): void
-    {
-        $this->_usrid = $value;
-    }
 
-    public function setMedias($value): void
+    public function user()
     {
-        $this->_medias = $value;
-    }
+        $data = false;
+        $findbys = ['id','name'];
+        foreach ($findbys as $findby) {
+            $var = $this->_forGetUser($findby);
+            if (!$var) continue;
 
-    public function _getUser()
-    {
-        return ['selectMedias'=> 'extend','filter' => ['alias' => [0 => $this->getZabbixUser()]]];
-    }
-
-    public function _updateUser()
-    {
-        if ($this->getMediaTypeId() and $this->getReceiver()){
-            $this->_medias[] = ['mediatypeid' => $this->getMediaTypeId(),'sendto' => $this->getReceiver()];
+            $data = $this->_zm->requestGet($var);
+            if ($data) break;
         }
-
-        $return = ['userid' => $this->_usrid, 'usrgrps' => ['usrgrpid' => [$this->_usrgrpid]]];
-
-        if ($this->_medias){
-            $return['medias'] = $this->_medias;
+        if (!empty($data['usrid'])) $this->setIdUser($data['usrid']);
+        if(!$data){
+            $data = $this->_zm->requestChange($this->_forCreateUser());
+        }else{
+            $needUpdate = $this->_needUpdateUser($data);
+            if ($needUpdate) {
+                $this->_zm->requestChange($needUpdate);
+            }
         }
+        if (empty($data['usrid'])) die('Cannot create Usr');
+    }
+
+    public function _needUpdateUser($data){
+        $init = [
+            'alias' => $this->getZabbixUser(),
+            'name' => $this->getInfoClient('contact_name'),
+            'passwd' => $this->getZabbixPwd(),
+            'roleid' => 1
+        ];
+        $need_change = [];
+        foreach ($data as $key=>$value){
+            if (isset($init[$key]) and $init[$key] <> $value) {
+                $need_change[$key] = $init[$key];
+            }
+        }
+        if ($this->_needUpdateReceiver($data['medias'])){
+            $need_change['medias'] = $data['medias'];
+            $need_change['medias'][] = ['mediatypeid' => $this->getIdMediatype(),'sendto'=>$this->getReceiver()];
+        }
+        if ($this->_needUpdateUsrGrp($data['usrgrps'])){
+            $need_change['usrgrps'] = $data['usrgrps'];
+            $need_change['usrgrps'] = ['usrgrpid' => $this->getIdUsergroup()];
+        }
+        if ($need_change){
+            if (empty($need_change['medias'])) $need_change['medias'] = $data['medias'];
+            if (empty($need_change['usrgrps'])) $need_change['usrgrps'] = $data['usrgrps'];
+            $need_change['userid'] = $data['userid'];
+            return $this->_forUpdateUser($need_change);
+        }
+        return false;
+    }
+
+    public function _needUpdateReceiver($data){
+        $find_email = false;
+        foreach ($data as $media) {
+            if (isset($media['sendto'])){
+                if(is_array($media['sendto'])){
+                    foreach ($media['sendto'] as $email){
+                        if ($email == $this->getReceiver()){
+                            $find_email = true;
+                            break;
+                        }
+                    }
+                } else{
+                    $find_email = $media['sendto'] == $this->getReceiver();
+                }
+            }
+            if ($find_email) break;
+        }
+        return !$find_email;
+    }
+
+    public function _needUpdateUsrGrp($data){
+        $find_usrgrp = false;
+        foreach ($data as $usrgrp) {
+            if (isset($usrgrp['usrgrpid'])){
+                $find_usrgrp = $usrgrp['usrgrpid'] == $this->getIdUsergroup();
+            }
+            if ($find_usrgrp) break;
+        }
+        return !$find_usrgrp;
+    }
+
+    public function _forGetUser($findby)
+    {
+        $return['method'] = 'user.get';
+        if ($findby == 'id'){
+            if (!$this->getIdUser()) return false;
+            $return['params'] = ['userids' => $this->getIdUser()];
+        } elseif ($findby == 'name') {
+            $return['params'] = ['filter' => ['alias' => $this->getZabbixUser()]];
+        } else {
+            return false;
+        }
+        $return['items'] = '*';//'usrid';
         return $return;
+    }
+
+    public function _forCreateUser()
+    {
+        $return['method'] = 'user.create';
+        $return['params'] = [
+            'alias' => $this->getZabbixUser(),
+            'name' => $this->getInfoClient('contact_name'),
+            'passwd' => $this->getZabbixPwd(),
+            'roleid' => 1,
+            'usrgrps' => [
+                [
+                    'usrgrpid' => $this->getIdUsergroup(),
+                ],
+            ],
+            'medias' => [
+                [
+                    'mediatypeid' => $this->getIdMediatype(),
+                    'sendto' => $this->getReceiver(),
+                ],
+            ]
+        ];
+        $return['items'] = 'usrids';
+        return $return;
+    }
+
+    public function _forUpdateUser($params)
+    {
+        $return['method'] = 'user.update';
+        $return['params'] = $params;
+        $return['items'] = 'usrgrpids';
+        return $return;
+    }
+
+    public function _forDeleteUser()
+    {
+        $return['method'] = 'user.delete';
+        $return['params'] = [$this->getIdUser()];
+        $return['items'] = 'usrids';
+        return $return;
+    }
+
+    public function has_messages(){
+        return $this->_zm->has_messages();
+    }
+
+    public function get_messages(){
+        return $this->_zm->get_messages();
+    }
+
+    public function get_messages_html(){
+        return $this->_zm->get_messages_html();
+    }
+
+
+    private function isTemporalParam($param){
+        return substr($param,0,1) == '_';
     }
 
     /**
@@ -396,6 +867,86 @@ class zabbix_parameter
     }
 
     /**
+     * @return bool
+     */
+    public function getEnableConnexion(): bool
+    {
+        return $this->enable_connexion == 'y';
+    }
+
+    /**
+     * @param string $enable_connexion
+     */
+    public function setEnableConnexion(string $enable_connexion): void
+    {
+        $this->enable_connexion = $enable_connexion;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getEnableTrend(): bool
+    {
+        return $this->enable_trend == 'y';
+    }
+
+    /**
+     * @param string $enable_trend
+     */
+    public function setEnableTrend(string $enable_trend): void
+    {
+        $this->enable_trend = $enable_trend;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getEnableEvent(): bool
+    {
+        return $this->enable_event == 'y';
+    }
+
+    /**
+     * @param string $enable_event
+     */
+    public function setEnableEvent(string $enable_event): void
+    {
+        $this->enable_event = $enable_event;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getEnableSmtp(): bool
+    {
+        return $this->enable_smtp == 'y';
+    }
+
+    /**
+     * @param string $enable_smtp
+     */
+    public function setEnableSmtp(string $enable_smtp): void
+    {
+        $this->enable_smtp = $enable_smtp;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getEnableAlert(): bool
+    {
+        return $this->enable_alert == 'y';
+    }
+
+    /**
+     * @param string $enable_alert
+     */
+    public function setEnableAlert(string $enable_alert): void
+    {
+        $this->enable_alert = $enable_alert;
+    }
+
+    /**
      * @return mixed
      */
     public function getLimitMonitor()
@@ -619,6 +1170,59 @@ class zabbix_parameter
         $this->smtp_sender = $smtp_sender;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getIdMediatype()
+    {
+        return $this->id_mediatype;
+    }
+
+    /**
+     * @param mixed $id_mediatype
+     */
+    public function setIdMediatype($id_mediatype): void
+    {
+        $this->id_mediatype = $id_mediatype;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIdUsergroup()
+    {
+        return $this->id_usergroup;
+    }
+
+    /**
+     * @param mixed $id_usergroup
+     */
+    public function setIdUsergroup($id_usergroup): void
+    {
+        $this->id_usergroup = $id_usergroup;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIdUser()
+    {
+        return $this->id_user;
+    }
+
+    /**
+     * @param $user
+     */
+    public function setIdUser($user): void
+    {
+        if (is_array($user)){
+            $this->id_user = $user['userid'];
+            $this->_medias = isset($user['medias']) ? $user['medias'] : [];
+            $this->_usrgrps = isset($user['usrgrps']) ? $user['usrgrps'] : [];
+        }else{
+            $this->id_user = $user;
+        }
+    }
 
     public function __get($name)
     {
@@ -634,4 +1238,5 @@ class zabbix_parameter
             $this->$name = $value;
         }
     }
+
 }
