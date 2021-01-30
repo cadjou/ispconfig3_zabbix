@@ -95,6 +95,7 @@ class parameter_actions extends tform_actions
 
             $this->tpl->setVar('not_admin',!$this->is_admin);
             $this->tpl->setVar('not_reseler',!($this->is_reseller_for_client or $this->is_admin));
+            $this->tpl->setVar('type_form',$this->user_type);
         }
         parent::onShow();
     }
@@ -142,9 +143,23 @@ class parameter_actions extends tform_actions
             }
             $this->app->error($this->app->lng('error_no_view_permission'));
         }
+
+        $this->dataRecord['smtp_ssl'] = !empty($this->dataRecord['smtp_ssl']) ? $this->dataRecord['smtp_ssl'] : 'n';
+        $this->dataRecord['id_mediatype'] = !empty($this->dataRecord['id_mediatype']) ? $this->dataRecord['id_mediatype'] : '-1';
+        $this->dataRecord['id_usergroup'] = !empty($this->dataRecord['id_usergroup']) ? $this->dataRecord['id_usergroup'] : '-1';
+        $this->dataRecord['id_user'] = !empty($this->dataRecord['id_user']) ? $this->dataRecord['id_user'] : '-1';
+
         if ($this->user_type == 'admin') {
+            $this->dataRecord['isp_glue'] = !empty($this->dataRecord['isp_glue']) ? $this->dataRecord['isp_glue'] : '-';
+            $this->dataRecord['zabbix_shared'] = !empty($this->dataRecord['zabbix_shared']) ? $this->dataRecord['zabbix_shared'] : 'n';
             $this->dataRecord = $this->isp_zabbix->checkAdmin($this->dataRecord);
         } else {
+            $this->dataRecord['enable_connexion'] = !empty($this->dataRecord['enable_connexion']) ? $this->dataRecord['enable_connexion'] : 'n';
+            $this->dataRecord['enable_connexion'] = !empty($this->dataRecord['enable_connexion']) ? $this->dataRecord['enable_connexion'] : 'n';
+            $this->dataRecord['enable_trend'] = !empty($this->dataRecord['enable_trend']) ? $this->dataRecord['enable_trend'] : 'n';
+            $this->dataRecord['enable_event'] = !empty($this->dataRecord['enable_event']) ? $this->dataRecord['enable_event'] : 'n';
+            $this->dataRecord['enable_smtp'] = !empty($this->dataRecord['enable_smtp']) ? $this->dataRecord['enable_smtp'] : 'n';
+            $this->dataRecord['enable_alert'] = !empty($this->dataRecord['enable_alert']) ? $this->dataRecord['enable_alert'] : 'n';
             $this->dataRecord = $this->isp_zabbix->checkLimits($this->dataRecord);
         }
         $this->dataRecord[$this->db_table_idx] = $_SESSION['zabbix']['parameters']['id'];

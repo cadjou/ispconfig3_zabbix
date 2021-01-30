@@ -10,6 +10,7 @@ if(!$app->auth->is_admin()) die('Access only for administrators.');
 $app->uses('tpl,tform,tform_actions,tools_sites');
 
 require_once __DIR__ . '/lib/classes/zabbix_manager.php';
+require_once __DIR__ . '/lib/classes/zabbix_parameter.php';
 require_once __DIR__ . '/lib/classes/ispconfig_zabbix.php';
 require_once __DIR__ . '/lib/classes/parameter_actions.php';
 

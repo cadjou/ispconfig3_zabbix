@@ -105,12 +105,11 @@ class ispconfig_zabbix
     public function checkLimits($data)
     {
         $client_data = $this->getZabbixParams($data);
-        $reseller_data = $this->getResellerParams($data['client_id']);
         $admin_data = $this->getAdminParams();
 
         $client_data = $this->validationLimit($client_data,$admin_data);
-        if ($reseller_data){
-            $client_data = $this->validationLimit($client_data,$reseller_data);
+        if ($client_data->hasReseller()){
+            $client_data = $this->validationLimit($client_data,$client_data->getReseller());
         }
         return $client_data->getArrayData();
     }
@@ -146,10 +145,11 @@ class ispconfig_zabbix
     protected function getZabbixParams($data){
         $clientInfo = $reseller = $admin = [];
         if(isset($data['client_id'])){
-            $sql = 'SELECT company_name,contact_firstname,contact_name,email,parent_client_id,username FROM client WHERE client_id = ?';
+            $sql = 'SELECT company_name,contact_firstname,contact_name,email,parent_client_id,username FROM client WHERE client_id = ?'; // TODO : remove unused var
             $clientInfo = $this->db->queryOneRecord($sql,$data['client_id']);
 
             if (!empty($clientInfo['parent_client_id'])){
+
                 $reseller = $this->getResellerParams($clientInfo['parent_client_id']);
             }
 
@@ -162,7 +162,7 @@ class ispconfig_zabbix
     protected function getAdminParams(){
         if ($this->admin_params) $this->admin_params;
 
-        $sql = 'SELECT * FROM zabbix_server WHERE server_id = 1';
+        $sql = 'SELECT * FROM zabbix_admin WHERE admin_id = 1';
         $this->admin_params = $this->getZabbixParams($this->db->queryOneRecord($sql));
         return $this->admin_params;
     }
@@ -171,15 +171,9 @@ class ispconfig_zabbix
     {
         if ($this->reseller_params) return $this->reseller_params;
 
-        if (!$this->auth->has_clients($client_id)){
-            $response = $this->db->queryOneRecord('SELECT parent_client_id FROM client WHERE client.client_id = ?', $client_id);
-            if (!empty($response['parent_client_id'])){
-                $this->reseller_params = $this->getZabbixParams($this->db->queryOneRecord('SELECT * FROM zabbix_client WHERE client_id = ?', $response['parent_client_id']));
-                return $this->reseller_params;
-            }
-            else {
-                $this->messages = '<br> Not find the reseller';
-            }
+        if (!$this->auth->has_clients($client_id)) {
+            $this->reseller_params = $this->getZabbixParams($this->db->queryOneRecord('SELECT * FROM zabbix_client WHERE client_id = ?', $client_id));
+            return $this->reseller_params;
         }
         return false;
     }
@@ -234,7 +228,7 @@ class ispconfig_zabbix
             $min = $data['type'] == 'min';
 
             $masterMslave = $value_master > $value_slave;
-            $value = (($min xor $masterMslave) or $values[$key] == '-1') ? $value_slave : $value_master;
+            $value = (($min xor $masterMslave) or $values->$key == '-1') ? $value_slave : $value_master;
 
             $values->$key = gettype($data['default']) == 'string' ? $this->to_time_suffixes($value)  : $value;
         }

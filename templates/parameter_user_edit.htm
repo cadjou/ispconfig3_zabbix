@@ -23,7 +23,7 @@
     <div class="pnl_formsarea">
         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
             <!-- ### Server Zabbix ### -->
-            <div class="panel panel-default">
+            <div class="panel panel-default" id="divEnableConnexion">
                 <div class="panel-heading" role="tab" id="headingServer">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseServer"
@@ -55,7 +55,7 @@
                 </div>
             </div>
             <!-- ### Email ### -->
-            <div class="panel panel-default">
+            <div class="panel panel-default" id="divEnableAlert">
                 <div class="panel-heading" role="tab" id="headingEmail">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseEmail"
@@ -310,7 +310,7 @@
                 </div>
             </div>
             <!-- ### Default SMTP ### -->
-            <div class="panel panel-default">
+            <div class="panel panel-default" id="divEnableSmtp">
                 <div class="panel-heading" role="tab" id="headingDefaultSMTP">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseDefaultSMTP"
@@ -380,7 +380,7 @@
             <div class="right">
                 <button class="btn btn-default formbutton-success" type="button"
                         value="{tmpl_var name='btn_save_txt'}"
-                        data-submit-form="pageForm" data-form-action="zabbix/parameter_user_edit.php?type=tmpl_var
+                        data-submit-form="pageForm" data-form-action="zabbix/parameter_user_edit.php?type={tmpl_var
                     name='type_form'}">{tmpl_var
                     name='btn_save_txt'}
                 </button>
@@ -393,4 +393,44 @@
         </div>
     </div>
     {tmpl_hook name="end_form"}
+    <script>
+        $(document).ready(function () {
+            if ($('#enable_connexion').prop("checked") == true) {
+                $('#divEnableConnexion').show("fast");
+            } else {
+                $('#divEnableConnexion').hide("fast");
+            }
+            $('#enable_connexion').click(function () {
+                if ($('#enable_connexion').prop("checked") == true) {
+                    $('#divEnableConnexion').show("fast");
+                } else {
+                    $('#divEnableConnexion').hide("fast");
+                }
+            });
+            if ($('#enable_alert').prop("checked") == true) {
+                $('#divEnableAlert').show("fast");
+            } else {
+                $('#divEnableAlert').hide("fast");
+            }
+            $('#enable_alert').click(function () {
+                if ($('#enable_alert').prop("checked") == true) {
+                    $('#divEnableAlert').show("fast");
+                } else {
+                    $('#divEnableAlert').hide("fast");
+                }
+            });
+            if ($('#enable_smtp').prop("checked") == true) {
+                $('#divEnableSmtp').show("fast");
+            } else {
+                $('#divEnableSmtp').hide("fast");
+            }
+            $('#enable_smtp').click(function () {
+                if ($('#enable_smtp').prop("checked") == true) {
+                    $('#divEnableSmtp').show("fast");
+                } else {
+                    $('#divEnableSmtp').hide("fast");
+                }
+            });
+        });
+    </script>
 </div>

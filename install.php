@@ -11,8 +11,8 @@ $db_host      = DB_HOST;
 $db_port      = DB_PORT;
 $db_charset   = DB_CHARSET;
 $db_database  = DB_DATABASE;
-$db_root_user = 'root'; // By default DB_USER or user with create table permission
-$db_root_pwd  = 'iaxr67vRdoqa3D2'; // By DB_PASSWORD or Your root password
+$db_root_user = DB_USER; // By default DB_USER or user with create table permission
+$db_root_pwd  = DB_PASSWORD; // By DB_PASSWORD or Your root password
 
 
 // ******************************************

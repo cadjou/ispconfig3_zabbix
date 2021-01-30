@@ -6,9 +6,10 @@ $tform_def_file = "form/parameter_user.tform.php";
 // Loading classes
 $app->uses('tpl,tform,tform_actions,tools_sites');
 
-if (!$this->auth->has_clients($_SESSION['s']['user']['userid']) and $_GET['type'] == 'reseller') die('Don\'t try to hack please.');
+if (!$app->auth->is_admin() and !$app->auth->has_clients($_SESSION['s']['user']['userid']) and $_GET['type'] == 'reseller') die('Don\'t try to hack please.');
 
 require_once __DIR__ . '/lib/classes/zabbix_manager.php';
+require_once __DIR__ . '/lib/classes/zabbix_parameter.php';
 require_once __DIR__ . '/lib/classes/ispconfig_zabbix.php';
 require_once __DIR__ . '/lib/classes/parameter_actions.php';
 

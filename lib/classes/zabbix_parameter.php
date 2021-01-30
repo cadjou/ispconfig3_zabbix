@@ -91,6 +91,12 @@ class zabbix_parameter
 
         if (!empty($data['client_id']) and !$this->hasAdmin()) die('Missing Admin Setup');
 
+        $data['isp_glue'] = !empty($data['isp_glue']) ? $data['isp_glue'] : '-';
+        $data['smtp_ssl'] = !empty($data['smtp_ssl']) ? $data['smtp_ssl'] : 'n';
+        $data['id_mediatype'] = !empty($data['id_mediatype']) ? $data['id_mediatype'] : '-1';
+        $data['id_usergroup'] = !empty($data['id_usergroup']) ? $data['id_usergroup'] : '-1';
+        $data['id_user'] = !empty($data['id_user']) ? $data['id_user'] : '-1';
+
         $missing_param = [];
         if (!empty($data['admin_id'])){
             $this->enable_connexion = 'y';
@@ -173,11 +179,15 @@ class zabbix_parameter
     // Reseller
     // **********
 
-    protected function hasReseller()
+    public function hasReseller()
     {
         return is_object($this->reseller) and $this->reseller instanceof zabbix_parameter;
     }
 
+    public function getReseller()
+    {
+        return $this->reseller;
+    }
     // **********
     // Admin
     // **********
@@ -210,7 +220,8 @@ class zabbix_parameter
             $data = $this->_zm->requestGet($var);
             if ($data) break;
         }
-        if (!empty($data['mediatypeid'])) $this->setIdMediatype($data['mediatypeid']);
+
+        if (!empty($data->mediatypeid)) $this->setIdMediatype($data->mediatypeid);
 
         $zp = $this->whereMediatype();
 
@@ -243,10 +254,15 @@ class zabbix_parameter
                 $this->_zm->requestChange($this->_forDeleteMediaType());
             }
         }
-
-        if (empty($data['mediatypeids'])) die('Cannot create MediaType');
-
-        $this->setIdMediatype($data['mediatypeids']);
+        echo '<br>' . gettype($data) . '<br>';
+        print_r($data);
+        echo '<br>';
+        if (is_numeric($data)) {
+            $this->setIdMediatype($data);
+        } else{
+            if (empty($data->mediatypeid)) die('Cannot create MediaType<br>');
+            $this->setIdMediatype($data->mediatypeid);
+        }
     }
 
     public function _needUpdateMediaType($data)
@@ -359,7 +375,7 @@ class zabbix_parameter
             $data = $this->_zm->requestGet($var);
             if ($data) break;
         }
-        if (!empty($data['usrgrpid'])) $this->setIdUsergroup($data['usrgrpid']);
+        if (!empty($data->usrgrpid)) $this->setIdUsergroup($data->usrgrpid);
 
         $zp = $this->whereUserGroup();
 
@@ -393,9 +409,14 @@ class zabbix_parameter
             }
         }
 
-        if (empty($data['usrgrpid'])) die('Cannot create UserGroup');
+        if (is_numeric($data)) {
+            $this->setIdUsergroup($data);
+        } else{
+            if (empty($data->usrgrpid)) die('Cannot create UserGroup');
+            $this->setIdUsergroup($data->usrgrpid);
+        }
 
-        $this->setIdMediatype($data['usrgrpid']);
+
     }
 
     public function whereUserGroup()
@@ -472,6 +493,13 @@ class zabbix_parameter
 
     public function user()
     {
+        if (!$this->getEnableConnexion()){
+            $user = md5($this->admin->getZabbixPwd() . $this->getId() . 'user'); // TODO : change how to create user
+            $user = $this->admin->getIspKeyword() . $this->admin->getIspGlue() . $user;
+            $this->setZabbixUser($user);
+            $pwd = md5($this->admin->getZabbixPwd() . $this->getId() . 'pwd'); // TODO : change how to create pwd
+            $this->setZabbixPwd($pwd);
+        }
         $data = false;
         $findbys = ['id','name'];
         foreach ($findbys as $findby) {
@@ -481,7 +509,7 @@ class zabbix_parameter
             $data = $this->_zm->requestGet($var);
             if ($data) break;
         }
-        if (!empty($data['usrid'])) $this->setIdUser($data['usrid']);
+        if (!empty($data->usrid)) $this->setIdUser($data->usrid);
         if(!$data){
             $data = $this->_zm->requestChange($this->_forCreateUser());
         }else{
@@ -490,7 +518,15 @@ class zabbix_parameter
                 $this->_zm->requestChange($needUpdate);
             }
         }
-        if (empty($data['usrid'])) die('Cannot create Usr');
+        echo '<br>' . gettype($data) . '<br>';
+        print_r($data);
+        echo '<br>';
+        if (is_numeric($data)) {
+            $this->setIdUser($data);
+        }else{
+            if (empty($data->userid)) die('Cannot create Usr');
+            $this->setIdUser($data->userid);
+        }
     }
 
     public function _needUpdateUser($data){
@@ -498,44 +534,60 @@ class zabbix_parameter
             'alias' => $this->getZabbixUser(),
             'name' => $this->getInfoClient('contact_name'),
             'passwd' => $this->getZabbixPwd(),
-            'roleid' => 1
+            // 'roleid' => 1 TODO : manage roleid for update
         ];
+        if ($this->type == 'admin'){
+            $init = [];
+        }
         $need_change = [];
         foreach ($data as $key=>$value){
             if (isset($init[$key]) and $init[$key] <> $value) {
                 $need_change[$key] = $init[$key];
             }
         }
-        if ($this->_needUpdateReceiver($data['medias'])){
-            $need_change['medias'] = $data['medias'];
+        if ($this->_needUpdateReceiver($data->medias)){
+            echo 'medias<br>';
+            print_r((array) $data->medias);
+            echo '<br>';
+            foreach ($data->medias as $key=>$value) {
+                foreach ((array) $value as $k=>$item) {
+                    if ($k <> 'mediaid' and $k <> 'userid'){
+                        echo "$key . $k <br>";
+                        print_r($item);
+                        echo "<br>";
+                        $need_change['medias'][$key][$k] = $item;
+                    }
+                }
+            }
             $need_change['medias'][] = ['mediatypeid' => $this->getIdMediatype(),'sendto'=>$this->getReceiver()];
         }
-        if ($this->_needUpdateUsrGrp($data['usrgrps'])){
-            $need_change['usrgrps'] = $data['usrgrps'];
-            $need_change['usrgrps'] = ['usrgrpid' => $this->getIdUsergroup()];
+        if ($this->_needUpdateUsrGrp($data->usrgrps)){
+            $need_change['usrgrps'] = (array) $data->usrgrps;
+            $need_change['usrgrps'][] = ['usrgrpid' => $this->getIdUsergroup()];
         }
         if ($need_change){
-            if (empty($need_change['medias'])) $need_change['medias'] = $data['medias'];
-            if (empty($need_change['usrgrps'])) $need_change['usrgrps'] = $data['usrgrps'];
-            $need_change['userid'] = $data['userid'];
+            if (empty($need_change['medias'])) $need_change['medias'] = (array) $data->medias;
+            if (empty($need_change['usrgrps'])) $need_change['usrgrps'] = (array) $data->usrgrps;
+            $need_change['userid'] = $data->userid;
             return $this->_forUpdateUser($need_change);
         }
         return false;
     }
 
     public function _needUpdateReceiver($data){
+        if (!$this->getEnableAlert() or !$this->getReceiver()) return false;
         $find_email = false;
         foreach ($data as $media) {
-            if (isset($media['sendto'])){
-                if(is_array($media['sendto'])){
-                    foreach ($media['sendto'] as $email){
+            if (isset($media->sendto)){
+                if(!is_string($media->sendto)){
+                    foreach ($media->sendto as $email){
                         if ($email == $this->getReceiver()){
                             $find_email = true;
                             break;
                         }
                     }
                 } else{
-                    $find_email = $media['sendto'] == $this->getReceiver();
+                    $find_email = $media->sendto == $this->getReceiver();
                 }
             }
             if ($find_email) break;
@@ -546,8 +598,8 @@ class zabbix_parameter
     public function _needUpdateUsrGrp($data){
         $find_usrgrp = false;
         foreach ($data as $usrgrp) {
-            if (isset($usrgrp['usrgrpid'])){
-                $find_usrgrp = $usrgrp['usrgrpid'] == $this->getIdUsergroup();
+            if (isset($usrgrp->usrgrpid)){
+                $find_usrgrp = $usrgrp->usrgrpid == $this->getIdUsergroup();
             }
             if ($find_usrgrp) break;
         }
@@ -557,6 +609,7 @@ class zabbix_parameter
     public function _forGetUser($findby)
     {
         $return['method'] = 'user.get';
+
         if ($findby == 'id'){
             if (!$this->getIdUser()) return false;
             $return['params'] = ['userids' => $this->getIdUser()];
@@ -565,6 +618,8 @@ class zabbix_parameter
         } else {
             return false;
         }
+        $return['params']['selectMedias'] = 'extend';
+        $return['params']['selectUsrgrps'] = 'usrgrpid';
         $return['items'] = '*';//'usrid';
         return $return;
     }
@@ -581,15 +636,16 @@ class zabbix_parameter
                 [
                     'usrgrpid' => $this->getIdUsergroup(),
                 ],
-            ],
-            'medias' => [
+            ]
+        ];
+        if ($this->getEnableAlert() and $this->getIdMediatype() > 0 and $this->getReceiver())
+            $return['params']['medias'] = [
                 [
                     'mediatypeid' => $this->getIdMediatype(),
                     'sendto' => $this->getReceiver(),
                 ],
-            ]
-        ];
-        $return['items'] = 'usrids';
+            ];
+        $return['items'] = 'userids';
         return $return;
     }
 
@@ -1111,7 +1167,7 @@ class zabbix_parameter
      */
     public function getSmtpSsl()
     {
-        return $this->smtp_ssl;
+        return $this->smtp_ssl == 'y'? '1' : '0';
     }
 
     /**

@@ -60,9 +60,17 @@ class zabbix_manager
         $this->connexion();
         $response = $this->curl($method, $params);
 
-        if (isset($response[0])) return null;
+        echo 'response1<br>';
+        print_r($response);
+        echo '<br>';
+
+        if (!$response or empty($response[0])) return null;
 
         $response = $response[0];
+
+        echo 'response2<br>';
+        print_r($response);
+        echo '<br>';
 
         $items = is_array($items) ? $items : [$items];
         $return = [];
@@ -84,6 +92,9 @@ class zabbix_manager
             }
             $return[$item] = $tmp;
         }
+        echo 'return<br>';
+        print_r($return);
+        echo '<br>';
         return count($items) > 1 ? $return : $tmp;
     }
 
@@ -144,7 +155,8 @@ class zabbix_manager
             $post_fields['auth'] = $this->secret;
         }
 
-        //echo nl2br(print_r(json_encode($post_fields), true)) . '<br>';
+        echo $this->connexion_server . '/' . self::api_zabbix_api . '<br>';
+        echo nl2br(print_r(json_encode($post_fields),true)) . '<br>';
 
         $ch = curl_init();
 
@@ -167,7 +179,7 @@ class zabbix_manager
         $result_json = json_decode($result);
 
         //echo nl2br(print_r($post_fields, true)) . '<br>';
-        //echo nl2br(print_r($result, true)) . '<br>';
+        echo nl2br(print_r($result, true)) . '<br>';
 
         if (empty($result) or json_last_error() <> 0) {
             $this->add_messages('Server no return json data : Url Server = ' . $this->connexion_server . '/' . self::api_zabbix_api . ' it\'s correct ?','danger');
